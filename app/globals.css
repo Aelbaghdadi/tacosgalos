@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   TACOS GALOS — globals.css
+   - Tipografía sticker (firma de marca extraída de las stories)
+   - Inputs unificados
+   - Reglas que no son trivialmente Tailwind
+   ============================================================ */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-galos-black font-sans antialiased;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  /* Variables de fuente — pobladas desde layout.tsx */
+  :root {
+    --container-px: 1rem;
+  }
+}
+
+@layer components {
+  /* === Sticker text effect ===
+     Replica el look "ENCUÉNTRANOS EN GLÒRIES" / "MARINA" de las stories:
+     rojo + outline blanco grueso + sombra dura. */
+  .tg-sticker {
+    display: inline-block;
+    color: theme("colors.galos.red");
+    -webkit-text-stroke: 2px theme("colors.white");
+    text-shadow:
+      -3px -3px 0 theme("colors.white"),
+      3px -3px 0 theme("colors.white"),
+      -3px 3px 0 theme("colors.white"),
+      3px 3px 0 theme("colors.white"),
+      0 12px 0 rgba(0, 0, 0, 0.25),
+      0 22px 30px rgba(0, 0, 0, 0.35);
+  }
+  .tg-sticker--dark {
+    -webkit-text-stroke: 2px theme("colors.galos.black");
+    text-shadow:
+      -3px -3px 0 theme("colors.white"),
+      3px -3px 0 theme("colors.white"),
+      -3px 3px 0 theme("colors.white"),
+      3px 3px 0 theme("colors.white");
+  }
+
+  /* Variante "step number" usada en CreateYourTacoSteps */
+  .tg-step-num {
+    -webkit-text-stroke: 2px theme("colors.galos.black");
+  }
+
+  /* === Inputs unificados === */
+  .tg-input {
+    @apply px-3.5 py-3 border-2 border-neutral-300 rounded-xl text-base font-semibold transition-colors;
+    @apply focus:outline-none focus:border-galos-red;
+  }
+
+  /* === Container helper === */
+  .container {
+    @apply mx-auto px-4;
+    max-width: 1280px;
+  }
+}
+
+@layer utilities {
+  /* Padding de la página principal por encima de los headers fijos */
+  .pt-page {
+    /* Desktop: topbar (44px) + header (76px) */
+    padding-top: calc(44px + 76px);
+  }
+  /* Móvil: solo header (64px) — topbar oculto */
+  @media (max-width: 768px) {
+    .pt-page {
+      padding-top: 64px;
+    }
+  }
+}

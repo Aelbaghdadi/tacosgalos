@@ -1,0 +1,61 @@
+name: Deploy to Hostinger
+
+# Cuándo se dispara:
+# - Push a main → deploy automático
+# - Manualmente desde la pestaña "Actions" → "Run workflow"
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build & FTP Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (static export)
+        run: npm run build
+        env:
+          STATIC_EXPORT: "true"
+
+      - name: Verify out/ exists
+        run: |
+          if [ ! -d "out" ]; then
+            echo "❌ La carpeta out/ no se generó. Revisa el build."
+            exit 1
+          fi
+          echo "✅ Carpeta out/ lista — $(find out -type f | wc -l) archivos."
+
+      # Sube la carpeta /out a public_html/ vía FTP.
+      # Requiere los secrets FTP_HOST, FTP_USERNAME, FTP_PASSWORD configurados
+      # en Settings → Secrets and variables → Actions.
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./out/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR || '/public_html/' }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+
+      - name: Done
+        run: echo "🌮 Deploy completado en Hostinger."

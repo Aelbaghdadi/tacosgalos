@@ -1,0 +1,68 @@
+# ============================================================
+# Tacos Galos · Hostinger / Apache
+# Reglas para servir el export estático de Next.js correctamente.
+# Este archivo se incluye automáticamente en el build (está en /public).
+# ============================================================
+
+# 1. Compresión gzip — reduce tráfico hasta un 70%
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/x-javascript application/xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# 2. Cache largo para assets estáticos (imágenes, fuentes, JS, CSS hasheados por Next)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  # HTML siempre fresco para que un deploy se vea al instante
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(jpg|jpeg|png|webp|avif|svg|js|css|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# 3. Routing limpio para Next.js static export con trailingSlash:true
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Redirige /carta/ → /carta (opcional, depende de tu trailingSlash)
+  # Como Next exporta con trailingSlash:true, los archivos se sirven como
+  # /carta/index.html. Apache lo resuelve nativamente, no necesita rewrite.
+
+  # Si una URL no coincide con un archivo o carpeta y no tiene extensión,
+  # intenta servir su versión .html (fallback por si trailingSlash cambia).
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !\.[a-zA-Z0-9]+$
+  RewriteRule ^(.+?)/?$ $1.html [L]
+</IfModule>
+
+# 4. Página 404 personalizada (Next genera 404.html automáticamente)
+ErrorDocument 404 /404.html
+
+# 5. Seguridad básica
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# 6. Bloquea acceso a ficheros sensibles si hubiera
+<FilesMatch "(^\.|\.env|\.config|package(-lock)?\.json|tsconfig\.json)$">
+  Require all denied
+</FilesMatch>
