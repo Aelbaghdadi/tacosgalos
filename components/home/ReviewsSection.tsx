@@ -20,7 +20,7 @@ export function ReviewsSection() {
                 {"★".repeat(r.rating)}
                 {"☆".repeat(5 - r.rating)}
               </div>
-              <p className="font-bold text-base leading-relaxed mb-3">"{r.text}"</p>
+              <p className="font-bold text-base leading-relaxed mb-3">“{r.text}”</p>
               <p className="text-galos-red text-xs font-black uppercase tracking-wider">
                 {r.author} · {r.storeName}
               </p>
