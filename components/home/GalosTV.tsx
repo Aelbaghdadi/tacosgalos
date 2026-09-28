@@ -34,7 +34,7 @@ type Pieza =
 const PIEZAS: Pieza[] = [
   {
     tipo: "video",
-    src: "/videos/scooter_video.mp4",
+    src: "/videos/hero-movil.mp4",
     poster: "/images/mascots/mascot-delivery-scooter.png",
     titulo: "Reparto Galos",
   },

@@ -58,13 +58,12 @@ export function Hero() {
         tarjeta dentro del hero. Así deja de importar que su rojo no case
         exactamente con galos-red, que era el problema de encajarlo antes.
 
-        ⚠️ PLACEHOLDER: scooter_video.mp4 son 3852×2152 y 5,0 MB para 5 s.
-        Es 4K para un fondo. Sustituir por el render definitivo a 1920×1080
-        y <1,5 MB, con la acción en los dos tercios DERECHOS —el tercio
-        izquierdo tiene que quedar tranquilo o el DÍA XX/60 no se lee—.
-        Se queda fuera del móvil a propósito: 5 MB sobre datos móviles en la
-        primera pantalla no se sostiene, y 16:9 recortado a vertical pierde
-        el encuadre. El móvil conserva su tarjeta de vídeo más abajo.
+        hero.mp4 son 1920×1072 y 1,0 MB para 5 s, reencodado del master 4K de
+        5,1 MB (que vive fuera de public/ para no desplegarse). La tarjeta del
+        móvil usa hero-movil.mp4: 960×536 y 183 KB.
+        El fondo a sangre sigue siendo solo de escritorio por ENCUADRE, no ya
+        por peso: 16:9 recortado a vertical pierde la composición. Volver a
+        activarlo en móvil es ahora viable y está pendiente de decidir.
       */}
       <div aria-hidden className="absolute inset-0 z-0 hidden lg:block">
         <video
@@ -76,7 +75,7 @@ export function Hero() {
           poster="/images/mascots/mascot-delivery-scooter.png"
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="/videos/scooter_video.mp4" type="video/mp4" />
+          <source src="/videos/hero.mp4" type="video/mp4" />
         </video>
       </div>
 
@@ -217,7 +216,7 @@ export function Hero() {
                 aria-hidden
                 className="block w-full h-full object-cover"
               >
-                <source src="/videos/scooter_video.mp4" type="video/mp4" />
+                <source src="/videos/hero-movil.mp4" type="video/mp4" />
               </video>
             </div>
             <span className="absolute -top-3 left-3 z-10 bg-white text-galos-red rounded-full px-3.5 py-1.5 font-anton text-sm tracking-wide border-[3px] border-galos-black shadow-hard -rotate-6">
