@@ -26,10 +26,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Sin esta variable el build hornea http://localhost:3000 en las
+      # canónicas, los Open Graph y el JSON-LD de TODAS las páginas, y el
+      # deploy sale adelante sin avisar. Mejor romper aquí que publicarlo.
+      - name: Comprobar NEXT_PUBLIC_SITE_URL
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          if [ -z "$SITE_URL" ]; then
+            echo "❌ Falta el secret SITE_URL."
+            echo "   Settings → Secrets and variables → Actions → New repository secret"
+            echo "   Nombre: SITE_URL   Valor: https://tu-dominio.com (sin barra final)"
+            exit 1
+          fi
+          echo "✅ SITE_URL configurada."
+
       - name: Build (static export)
         run: npm run build
         env:
           STATIC_EXPORT: "true"
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.SITE_URL }}
 
       - name: Verify out/ exists
         run: |

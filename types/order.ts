@@ -45,6 +45,14 @@ export interface CustomerData {
   address?: string;
   city?: string;
   notes?: string;
+  /**
+   * Consentimiento de marketing, separado y NO premarcado (art. 21 LSSI).
+   * Existía un `marketingConsent` en types/customer.ts pero colgaba de
+   * `Customer`, un tipo que no usa nadie: el checkout trabaja con
+   * CustomerData, así que el consentimiento no viajaba con el pedido.
+   * Mapea a `customers.marketing_consent` del esquema de ARCHITECTURE.md.
+   */
+  marketingConsent?: boolean;
 }
 
 export interface Order {

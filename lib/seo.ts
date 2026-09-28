@@ -1,7 +1,39 @@
 import type { Metadata } from "next";
 import type { Store } from "@/types";
 
-const SITE_URL = "https://tacosgalos.com"; // placeholder
+/**
+ * ⚠️ tacosgalos.com NO ES DE LA MARCA.
+ * Está aparcado y a la venta ("This domain may be for sale", verificado por
+ * fetch directo), y tacosgalos.es sirve el placeholder de IONOS. Aquí estaba
+ * escrito a fuego, así que TODAS las canónicas, todos los Open Graph y el
+ * JSON-LD de los once locales apuntaban a un dominio ajeno en venta.
+ *
+ * Ahora sale de NEXT_PUBLIC_SITE_URL. Defínela en Vercel y en el workflow de
+ * deploy. El fallback es localhost a propósito: si falta la variable quiero
+ * que se note, no que apunte en silencio al dominio de otro.
+ */
+const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+
+/**
+ * Aviso ruidoso en build de producción. Sin esto, la ausencia de la variable
+ * es silenciosa y se hornean canónicas, Open Graph y JSON-LD apuntando a
+ * localhost en TODAS las páginas del export — un fallo invisible hasta que
+ * alguien mira el HTML generado o Google lo indexa.
+ */
+if (
+  !RAW_SITE_URL &&
+  typeof window === "undefined" &&
+  process.env.NODE_ENV === "production"
+) {
+  console.warn(
+    "\n⚠️  NEXT_PUBLIC_SITE_URL no está definida.\n" +
+      "   Las canónicas, los Open Graph y el JSON-LD se generarán con http://localhost:3000.\n" +
+      "   Defínela antes de desplegar (GitHub Actions o variables de entorno de Vercel).\n"
+  );
+}
+
+export const SITE_URL = (RAW_SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+
 const SITE_NAME = "Tacos Galos";
 const DEFAULT_OG = "/images/mascot-delivery.jpeg";
 

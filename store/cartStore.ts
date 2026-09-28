@@ -65,8 +65,10 @@ export const useCartStore = create<CartState>()(
     {
       name: "tg:cart",
       storage: createJSONStorage(() => localStorage),
-      // Solo persiste el carrito y modo. La promo la valida cada sesión.
-      partialize: (s) => ({ items: s.items, type: s.type }),
+      // La promo TAMBIÉN se persiste: antes se perdía al recargar, sin aviso
+      // y sin ningún campo donde volver a teclear el código, así que el
+      // usuario acababa pagando el 100% sin enterarse.
+      partialize: (s) => ({ items: s.items, type: s.type, promo: s.promo }),
     }
   )
 );

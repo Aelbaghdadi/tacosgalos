@@ -19,7 +19,21 @@ export type ProductCategoryId =
   | "drinks"       // Bebidas
   | "sauces";      // Salsas
 
-export type ProductBadge = "halal" | "new" | "top" | "spicy" | "promo" | "vegan";
+/**
+ * ⚠️ "vegan" se usaba en productos que llevan queso ("El Vegan" tiene
+ * literalmente "salsa de queso" en su descripción). Eso no es un matiz de
+ * copy: es un alérgeno lácteo mal etiquetado. Se añade "vegetarian", que es
+ * lo que esos productos son de verdad. "vegan" se reserva para cuando la
+ * marca confirme algún producto realmente sin ingredientes de origen animal.
+ */
+export type ProductBadge =
+  | "halal"
+  | "new"
+  | "top"
+  | "spicy"
+  | "promo"
+  | "vegan"
+  | "vegetarian";
 
 export type Allergen =
   | "gluten"

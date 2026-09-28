@@ -10,6 +10,7 @@ import { OrderStatusTimeline } from "@/components/checkout/OrderStatusTimeline";
 import { useOrderStore } from "@/store/orderStore";
 import { api } from "@/lib/mockApi";
 import { STORES } from "@/data/stores";
+import { SOCIAL } from "@/data/social";
 import { formatPrice } from "@/lib/utils";
 import type { Order } from "@/types";
 
@@ -110,14 +111,25 @@ export function GraciasContent() {
 
           <Card className="p-6 flex flex-col gap-3" hover={false}>
             <h3 className="font-anton text-xl uppercase">¿Y ahora qué?</h3>
+            {/*
+              Antes: "Si tienes Galos Club, ya has sumado puntos." No hay ni
+              programa aprobado, ni auth, ni tabla de puntos detrás.
+            */}
             <p className="text-sm text-neutral-700">
-              Te avisamos en cada estado. Si tienes Galos Club, ya has sumado puntos.
+              Te avisamos en cada cambio de estado del pedido.
             </p>
-            <Button href="/carta" variant="primary" size="md">
-              Repetir pedido / Pedir otro Galos
+            {/* Texto largo: tiene que poder partir en dos líneas o se sale
+                de la pastilla y provoca scroll horizontal en móvil. */}
+            <Button
+              href="/carta"
+              variant="primary"
+              size="md"
+              className="whitespace-normal leading-tight"
+            >
+              Pedir otro Galos
             </Button>
-            <Button href="https://www.instagram.com/" external variant="dark" size="md">
-              Síguenos en Instagram
+            <Button href={SOCIAL.instagram} external variant="dark" size="md">
+              Síguenos en @tacosgalos
             </Button>
             <p className="text-xs text-neutral-500 mt-2">
               ¿Algún problema? Llámanos al local o escríbenos a hola@tacosgalos.com.

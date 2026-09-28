@@ -1,35 +1,32 @@
 import type { Review } from "@/types";
 
 /**
- * MOCK. No son reseñas reales verificadas. Para producción se debe integrar
- * Google Places API (textual + rating) o un agregador. Marcado con `mock: true`.
+ * ⚠️ TESTIMONIOS DE MUESTRA — NO SON RESEÑAS REALES.
+ *
+ * Antes iban con `source: "Google"` y `"Tripadvisor"` y se pintaban en la home
+ * como "vía Google". Publicar reseñas fabricadas atribuidas a plataformas
+ * reales es práctica desleal engañosa (RD-ley 24/2021, Directiva Ómnibus,
+ * en vigor desde el 28/05/2022). Con una marca real detrás, eso es riesgo
+ * legal y reputacional, no un detalle de maquetación.
+ *
+ * Ya no se atribuyen a ninguna plataforma y la home no publica nota media.
+ *
+ * PARA PRODUCCIÓN: pedirle a la marca acceso a su Google Business Profile e
+ * integrar Google Places API. Es lo único que permite enseñar una valoración
+ * media verdadera. Hasta entonces, esta sección va sin cifras.
  */
 export const REVIEWS: Review[] = [
-  {
-    id: "r1",
-    rating: 5,
-    author: "Marc",
-    storeName: "Poblenou",
-    text: "El taco XL es brutal. Llevo pidiéndolos cada finde. La web va mil veces más rápido que las apps.",
-    source: "Google",
-    mock: true,
-  },
-  {
-    id: "r2",
-    rating: 5,
-    author: "Sara",
-    storeName: "Sagrada Familia",
-    text: "Mejor calidad/precio del barrio. La salsa Algerienne es vicio. Pidiendo directo te dan -10%, así que ni Glovo ni nada.",
-    source: "Google",
-    mock: true,
-  },
+  // Eliminados r1 y r2: uno elogiaba la velocidad de una web que todavía no
+  // existe ("va mil veces más rápido que las apps") y el otro repetía la
+  // afirmación de precio que hemos tenido que retirar de la home. Eran los
+  // dos testimonios que un lector podía desmentir leyendo la propia web.
   {
     id: "r3",
     rating: 4,
     author: "Yassin",
     storeName: "Mataró",
     text: "Muy buenos. Halal, generosos, y que tengan recogida en 8 min es oro puro.",
-    source: "Google",
+    source: "Web",
     mock: true,
   },
   {
@@ -38,7 +35,7 @@ export const REVIEWS: Review[] = [
     author: "Júlia",
     storeName: "Terrassa",
     text: "Llegué con hambre, salí lleno. El Cordon Bleu se sale.",
-    source: "Tripadvisor",
+    source: "Web",
     mock: true,
   },
   {
@@ -46,8 +43,8 @@ export const REVIEWS: Review[] = [
     rating: 5,
     author: "David",
     storeName: "Gavà",
-    text: "El XXL para compartir vale cada euro. Pediré por web para sumar al Galos Club.",
-    source: "Google",
+    text: "El XXL para compartir vale cada euro.",
+    source: "Web",
     mock: true,
   },
   {
@@ -55,8 +52,8 @@ export const REVIEWS: Review[] = [
     rating: 5,
     author: "Núria",
     storeName: "Sabadell",
-    text: "Que abran ya en el centro de Sabadell por favor. Vamos siempre a Terrassa por estos.",
-    source: "Google",
+    text: "Crujiente por fuera, fundido por dentro. Justo lo que prometen.",
+    source: "Web",
     mock: true,
   },
 ];

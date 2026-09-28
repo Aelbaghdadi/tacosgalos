@@ -54,9 +54,18 @@ export default function LegalPage({ params }: { params: { slug: string } }) {
           </StickerTitle>
           <Card className="p-7" hover={false}>
             <p className="text-neutral-700 font-semibold mb-4">{page.intro}</p>
+            {/*
+              Antes decía: "Texto placeholder. Pendiente de redacción legal
+              definitiva con asesor." — visible en las cinco páginas enlazadas
+              desde el footer de todo el sitio.
+              Sigue faltando el texto legal de verdad (art. 10 LSSI: razón
+              social, NIF, domicilio y datos registrales), pero no hace falta
+              anunciarlo con vocabulario de desarrollo.
+            */}
             <p className="text-sm text-neutral-500 italic">
-              Texto placeholder. Pendiente de redacción legal definitiva con asesor.
-              Solo se muestra para que el footer tenga estructura completa.
+              Estamos ultimando este documento con nuestro asesor legal. Si
+              necesitas esta información ahora mismo, escríbenos y te la
+              facilitamos.
             </p>
           </Card>
         </div>

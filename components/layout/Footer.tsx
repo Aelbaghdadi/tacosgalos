@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FOOTER_LINKS } from "@/data/navigation";
+import { SOCIAL } from "@/data/social";
 
 /**
  * Footer mobile-first.
@@ -48,9 +49,9 @@ export function Footer() {
               Conecta
             </h4>
             <div className="flex flex-wrap gap-2">
-              <SocialPill href="https://www.instagram.com/" label="Instagram" icon={<InstagramIcon />} />
-              <SocialPill href="https://www.tiktok.com/" label="TikTok" icon={<TikTokIcon />} />
-              <SocialPill href="mailto:hola@tacosgalos.com" label="hola@tacosgalos.com" icon={<MailIcon />} />
+              <SocialPill href={SOCIAL.instagram} label="@tacosgalos" icon={<InstagramIcon />} />
+              <SocialPill href={SOCIAL.tiktok} label="@tacosgalos" icon={<TikTokIcon />} />
+              <SocialPill href={`mailto:${SOCIAL.email}`} label={SOCIAL.email} icon={<MailIcon />} />
             </div>
           </div>
 
@@ -78,7 +79,9 @@ export function Footer() {
         <div className="mt-10 pt-5 border-t border-white/10 flex flex-col gap-2 text-[11px] text-neutral-500">
           <p>© {year} Tacos Galos. Todos los derechos reservados.</p>
           <p className="leading-relaxed">
-            Productos <span className="text-galos-gold/90 font-bold">halal certificados</span>.
+            {/* "certificados" implica una certificadora concreta que nadie ha
+                verificado. La marca dice 100% halal; eso sí se puede afirmar. */}
+            Productos <span className="text-galos-gold/90 font-bold">100% halal</span>.
             Posibles trazas: gluten, lácteos, huevo, sésamo, frutos secos.
             Información de alérgenos disponible bajo petición o en{" "}
             <Link href="/legal/alergenos" className="underline hover:text-galos-gold">

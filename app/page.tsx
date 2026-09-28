@@ -1,12 +1,13 @@
 import { Hero } from "@/components/home/Hero";
 import { Marquee } from "@/components/ui/Marquee";
+import { CadaCapa } from "@/components/home/CadaCapa";
 import { DirectOrderSection } from "@/components/home/DirectOrderSection";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { MenuSection } from "@/components/menu/MenuSection";
-import { CreateYourTacoSteps } from "@/components/home/CreateYourTacoSteps";
+import { TacoBuilder } from "@/components/home/TacoBuilder";
 import { PromoSection } from "@/components/home/PromoSection";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
-import { InstagramGrid } from "@/components/home/InstagramGrid";
+import { GalosTV } from "@/components/home/GalosTV";
 import { FaqSection } from "@/components/home/FaqSection";
 import { buildMetadata } from "@/lib/seo";
 
@@ -21,13 +22,14 @@ export default function HomePage() {
     <>
       <Hero />
       <Marquee />
+      <CadaCapa />
       <DirectOrderSection />
       <HowItWorks />
       <MenuSection />
-      <CreateYourTacoSteps />
+      <TacoBuilder />
       <PromoSection />
       <ReviewsSection />
-      <InstagramGrid />
+      <GalosTV />
       <FaqSection />
     </>
   );

@@ -4,14 +4,20 @@ import { StickerTitle, Hl } from "@/components/ui/StickerTitle";
 
 const PERKS = [
   { icon: "⚡", title: "Recogida en 8 min", desc: "Pides aquí, lo recoges caliente. Sin colas, sin comisiones de intermediarios." },
-  { icon: "🎁", title: "-10% en tu 1er pedido", desc: "Solo en la web oficial. Aplicamos automáticamente en el checkout." },
-  { icon: "🏆", title: "Galos Club", desc: "Acumula puntos, desbloquea promos y un Galos gratis cada 8 pedidos." },
-  { icon: "💸", title: "Sin sobreprecios", desc: "Mismo precio que en local. Las apps suelen recargar hasta un 25%." },
+  // "Aplicamos automáticamente en el checkout" era falso: el único camino que
+  // aplica el cupón es pulsar la tarjeta de la sección Promos.
+  { icon: "🎁", title: "-10% en tu 1er pedido", desc: "Solo en la web oficial. Actívalo en la sección de promos." },
+  // Galos Club: la mecánica "un Galos gratis cada 8 pedidos" no la ha
+  // aprobado la marca y no hay sistema de puntos detrás.
+  { icon: "🏆", title: "Galos Club", desc: "Promos exclusivas para quien pide directo. Muy pronto." },
+  // ⚠️ Antes: "Mismo precio que en local. Las apps suelen recargar hasta un 25%."
+  // data/products.ts:4-6 dice por escrito que los PVP salen de Glovo, o sea
+  // que HOY son precios de plataforma con comisión dentro.
+  { icon: "💸", title: "Sin intermediarios", desc: "Pides directo al local, sin apps de por medio." },
 ];
 
 /**
  * Sección "Pide directo y gana más" — núcleo del argumento comercial.
- * La mascota con la bolsa -10% lo hace visualmente irresistible.
  */
 export function DirectOrderSection() {
   return (

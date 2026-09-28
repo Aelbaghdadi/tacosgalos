@@ -6,7 +6,9 @@ const STEPS = [
   { n: 2, title: "Eliges tu local", desc: "Tu local más cercano se prepara para tu pedido." },
   { n: 3, title: "Cocina lo recibe", desc: "Pasa al KDS al instante. Sale en 8 min." },
   { n: 4, title: "Recoges o te lo llevamos", desc: "Pickup rápido o delivery directo." },
-  { n: 5, title: "Ganas promos y puntos", desc: "Galos Club: cada pedido suma." },
+  // Antes: "Ganas promos y puntos · Galos Club: cada pedido suma."
+  // No hay sistema de puntos ni programa aprobado por la marca.
+  { n: 5, title: "Ganas promos", desc: "Ofertas que solo existen en la web." },
 ];
 
 export function HowItWorks() {
@@ -20,7 +22,10 @@ export function HowItWorks() {
         />
         <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {STEPS.map((s) => (
-            <li key={s.n} className="bg-galos-cream border-[3px] border-galos-black rounded-galos shadow-hard p-6 relative">
+            <li
+              key={s.n}
+              className="bg-galos-cream border-[3px] border-galos-black rounded-galos shadow-hard p-6 relative"
+            >
               <div className="absolute -top-4 -left-2 bg-galos-red text-white border-[3px] border-galos-black rounded-full w-12 h-12 flex items-center justify-center font-anton text-2xl shadow-hard-sm">
                 {s.n}
               </div>

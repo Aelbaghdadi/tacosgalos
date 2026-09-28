@@ -16,6 +16,7 @@ const BADGE_LABELS: Record<ProductBadge, { label: string; variant: "halal" | "ne
   spicy: { label: "🌶 Picante", variant: "spicy" },
   promo: { label: "Promo", variant: "promo" },
   vegan: { label: "Vegan", variant: "halal" },
+  vegetarian: { label: "Veggie", variant: "halal" },
 };
 
 export function ProductCard({ product }: { product: Product }) {

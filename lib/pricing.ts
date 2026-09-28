@@ -35,7 +35,9 @@ export function calcDiscount(subtotal: number, promo: Promo | null): number {
   if (promo.type === "percent" && promo.percent) {
     return +(subtotal * (promo.percent / 100)).toFixed(2);
   }
-  if (promo.type === "fixed" && promo.amount) {
+  // Ojo: antes era `&& promo.amount`, y 0 es falsy. Una promo "fixed" con
+  // amount 0 se daba por aplicada y descontaba 0 € en silencio.
+  if (promo.type === "fixed" && typeof promo.amount === "number" && promo.amount > 0) {
     return Math.min(subtotal, promo.amount);
   }
   return 0;
@@ -56,7 +58,12 @@ export function calcTotals(
 ): OrderTotals {
   const subtotal = +calcSubtotal(items).toFixed(2);
   const discount = calcDiscount(subtotal, promo);
-  const deliveryFee = calcDeliveryFee(subtotal - discount, type);
+  // El umbral de envío gratis se mide sobre el subtotal SIN descontar.
+  // Antes se medía sobre el subtotal ya rebajado, así que en un carrito de
+  // 26 € aplicar el -10% resucitaba los 1,99 € de envío y el descuento
+  // efectivo se quedaba en 0,61 €. La franja 25-27,77 € es justo el ticket
+  // de dos personas, y delivery es el modo por defecto del carrito.
+  const deliveryFee = calcDeliveryFee(subtotal, type);
   const total = +(subtotal - discount + deliveryFee).toFixed(2);
   return { subtotal, discount, deliveryFee, total };
 }

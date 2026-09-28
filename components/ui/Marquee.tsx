@@ -17,7 +17,9 @@ export function Marquee() {
       aria-hidden
       className="relative bg-galos-black text-white border-y-[3px] border-white py-3 overflow-hidden font-anton text-xl tracking-widest uppercase"
     >
-      <div className="inline-flex gap-10 whitespace-nowrap animate-marquee pl-[100%]">
+      {/* Se para al pasar el ratón: WCAG 2.2.2 exige un mecanismo de pausa
+          para cualquier movimiento automático de más de 5 segundos. */}
+      <div className="inline-flex gap-10 whitespace-nowrap animate-marquee pl-[100%] hover:[animation-play-state:paused]">
         {[...ITEMS, ...ITEMS, ...ITEMS].map((item, i) => (
           <span key={i} className="inline-block">
             · {item}

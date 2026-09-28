@@ -144,7 +144,8 @@ export const PRODUCTS: Product[] = [
     category: "tacos_jefe",
     basePrice: 13.90,
     imageUrl: `${IMG}/taco_el_vegan.webp`,
-    badges: ["vegan"],
+    // Lleva queso: es vegetariano, no vegano.
+    badges: ["vegetarian"],
     isHalal: true,
     customizable: false,
     available: true,
@@ -314,7 +315,8 @@ export const PRODUCTS: Product[] = [
     category: "bowls",
     basePrice: 14.90,
     imageUrl: `${IMG}/bowls_galos_el_veggie.webp`,
-    badges: ["vegan"],
+    // Lleva queso: es vegetariano, no vegano.
+    badges: ["vegetarian"],
     isHalal: true,
     customizable: false,
     available: true,

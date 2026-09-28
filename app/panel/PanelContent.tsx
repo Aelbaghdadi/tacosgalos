@@ -21,10 +21,19 @@ import { cn } from "@/lib/utils";
  *   - Botones llaman a `updateOrderStatus` → webhook al cliente
  *   - Una mini app local Node escucha la DB y dispara impresora térmica
  */
+/**
+ * ⚠️ Faltaba la columna "out_for_delivery" y eso rompía la demo:
+ * KitchenCard pasa un pedido delivery de `ready` a `out_for_delivery`, ese
+ * estado no tenía columna, el filtro de abajo no lo encontraba y la tarjeta
+ * se evaporaba del tablero sin poder volver — porque el botón vivía dentro
+ * de la tarjeta. Y delivery es el modo por defecto del carrito, o sea el
+ * camino natural de la demo. Tres clics.
+ */
 const COLUMNS: { id: OrderStatus; label: string; color: string }[] = [
   { id: "accepted", label: "Nuevos", color: "bg-galos-gold" },
   { id: "preparing", label: "En cocina", color: "bg-galos-red text-white" },
   { id: "ready", label: "Listos", color: "bg-emerald-400" },
+  { id: "out_for_delivery", label: "En reparto", color: "bg-sky-400" },
   { id: "delivered", label: "Entregados", color: "bg-galos-black text-white" },
 ];
 
@@ -59,9 +68,15 @@ export function PanelContent() {
               y dispara la impresora térmica del local mediante una mini-app Node.
             </p>
           </div>
-          <Button href="/checkout" variant="white" size="md">
-            Generar pedido demo
-          </Button>
+          {/* Sin esto había que teclear /panel/reto a mano delante del dueño. */}
+          <div className="flex gap-2 flex-wrap">
+            <Button href="/panel/reto" variant="gold" size="md">
+              Panel del reto →
+            </Button>
+            <Button href="/checkout" variant="white" size="md">
+              Generar pedido demo
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -73,7 +88,7 @@ export function PanelContent() {
               <Button href="/carta" variant="primary" size="md">Crear uno demo</Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
               {COLUMNS.map((col) => {
                 const list = orders.filter((o) => o.status === col.id);
                 return (

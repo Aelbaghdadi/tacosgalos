@@ -19,7 +19,7 @@ export interface Promo {
   code?: string;
   /** Para type="percent": 10 = 10% descuento. */
   percent?: number;
-  /** Para type="fixed": valor en € a descontar. */
+  /** Para type="fixed": valor en € a descontar. Debe ser > 0. */
   amount?: number;
   /** Solo aplicable si pides directo en la web (clave del informe). */
   channel: PromoChannel;
@@ -28,6 +28,12 @@ export interface Promo {
   countdownLabel?: string;
   /** CTA del botón. */
   cta: string;
+  /**
+   * A dónde lleva el CTA. Antes todas las promos sin código hacían
+   * router.push("/carta") sin excepción, así que "Ver locales" te dejaba
+   * en la carta y "Cómo funciona" no explicaba nada.
+   */
+  ctaHref?: string;
   /** Pedido mínimo para aplicar. */
   minOrder?: number;
   /** Si aplica solo a ciertos locales (vacío = todos). */

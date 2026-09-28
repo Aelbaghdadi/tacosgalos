@@ -1,6 +1,6 @@
 import { MenuSection } from "@/components/menu/MenuSection";
 import { Marquee } from "@/components/ui/Marquee";
-import { CreateYourTacoSteps } from "@/components/home/CreateYourTacoSteps";
+import { TacoBuilder } from "@/components/home/TacoBuilder";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -16,7 +16,7 @@ export default function CartaPage() {
       <div className="pt-page bg-galos-red" />
       <MenuSection />
       <Marquee />
-      <CreateYourTacoSteps />
+      <TacoBuilder />
     </>
   );
 }

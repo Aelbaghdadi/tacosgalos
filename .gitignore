@@ -10,3 +10,14 @@ build/
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+
+# Masters PNG de los assets generados: pesan y no se sirven
+assets-raw/
+
+# Master de vídeo: 5,1 MB que no se despliegan. Ver masters/README.md
+masters/*
+!masters/README.md
+
+# Salidas accidentales en la raíz (generaciones sueltas, grabaciones)
+/Gemini_Generated_Image_*
+/crav-recorrido-completo.gif

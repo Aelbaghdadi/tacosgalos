@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -25,7 +26,18 @@ export function Modal({ open, onClose, children, size = "md", ariaLabel }: Props
     };
   }, [open, onClose]);
 
-  return (
+  /**
+   * Portal a <body>. Sin él, el modal queda atrapado en el contexto de
+   * apilamiento que crea el `z-10` del Hero, y el header fijo (z-[100]) se
+   * pinta ENCIMA del velo negro: el modal de AVÍSAME — el primer elemento
+   * interactivo del hero — salía por debajo de la cabecera.
+   * `montado` evita tocar `document` durante el render en servidor.
+   */
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
+  if (!montado) return null;
+
+  return createPortal(
     <div
       aria-hidden={!open}
       className={cn(
@@ -56,6 +68,7 @@ export function Modal({ open, onClose, children, size = "md", ariaLabel }: Props
         </button>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

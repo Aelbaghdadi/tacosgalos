@@ -21,7 +21,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-figtree)", "system-ui", "sans-serif"],
         anton: ["var(--font-anton)", "system-ui", "sans-serif"],
       },
       boxShadow: {
@@ -32,6 +32,9 @@ const config: Config = {
         red: "0 14px 30px -10px rgba(227,6,19,.55)",
       },
       borderRadius: {
+        // `rounded-galos-sm` ya se usaba en varios componentes pero no estaba
+        // definida, así que no aplicaba nada. Se añade aquí.
+        "galos-sm": "14px",
         galos: "22px",
         "galos-lg": "32px",
       },

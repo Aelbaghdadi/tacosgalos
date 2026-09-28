@@ -22,6 +22,13 @@ const ctaClass: Record<Promo["variant"], string> = {
   dark: "bg-galos-gold text-galos-black",
 };
 
+/** Cuánto descuenta realmente una promo. 0 = no es un cupón de carrito. */
+function descuentoDe(p: Promo): number {
+  if (p.type === "percent") return p.percent ?? 0;
+  if (p.type === "fixed") return p.amount ?? 0;
+  return 0;
+}
+
 export function PromoSection() {
   const setPromo = useCartStore((s) => s.setPromo);
   const showToast = useUIStore((s) => s.showToast);
@@ -29,21 +36,33 @@ export function PromoSection() {
   const router = useRouter();
 
   const apply = async (p: Promo) => {
+    const destino = p.ctaHref ?? "/carta";
+
     if (!p.code) {
-      router.push("/carta");
+      router.push(destino);
       return;
     }
+
     const valid = await api.validateCoupon(p.code);
     if (!valid) {
       showToast("Cupón no válido");
       return;
     }
+
+    /**
+     * Blindaje: si el cupón no descuenta nada, NO lo aplicamos.
+     * Antes se llamaba a setPromo igualmente, se decía "✔ cupón listo en
+     * checkout" y el total no se movía — y encima setPromo sobrescribía el
+     * GALOS10 que sí funcionaba, así que el usuario perdía su descuento real.
+     */
+    if (descuentoDe(valid) <= 0) {
+      showToast(`${valid.title} se disfruta en el local`);
+      router.push(destino);
+      return;
+    }
+
     setPromo(valid);
-    showToast(
-      valid.percent
-        ? `✔ ${valid.code} aplicado · -${valid.percent}%`
-        : `✔ Cupón ${valid.code} listo en checkout`
-    );
+    showToast(`✔ ${valid.code} aplicado · -${valid.percent}%`);
     openCart();
   };
 

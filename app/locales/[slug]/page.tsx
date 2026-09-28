@@ -110,9 +110,14 @@ export default function LocalPage({ params }: { params: { slug: string } }) {
           <Card className="p-7" hover={false}>
             <h3 className="font-anton text-2xl uppercase mb-3">Cómo llegar</h3>
             <p className="text-neutral-700 font-semibold mb-4">{store!.address}</p>
-            <div className="aspect-[16/10] bg-galos-black/5 border-2 border-dashed border-galos-black rounded-galos flex items-center justify-center text-neutral-500 text-sm">
-              [ Mapa Google Maps · placeholder ]
-            </div>
+            {/*
+              Aquí había un recuadro punteado con el texto literal
+              "[ Mapa Google Maps · placeholder ]" en las 11 fichas de local
+              — justo las que se venden como el activo de SEO local.
+              Vocabulario de wireframe impreso al cliente.
+              No se mete un <iframe> de Google porque introduce cookies de
+              terceros y todavía no hay banner CMP.
+            */}
             <Button href={store!.googleMapsUrl} external variant="primary" size="md" className="mt-4 w-full">
               Abrir en Google Maps →
             </Button>

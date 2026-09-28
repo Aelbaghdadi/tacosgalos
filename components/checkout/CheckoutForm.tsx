@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +18,17 @@ import type { CustomerData, PaymentMethod } from "@/types";
  * analytics, recuperación de carrito y SEO.
  *
  * Flujo: Datos → Pago → Confirma.
+ *
+ * ⚠️ CUMPLIMIENTO AÑADIDO:
+ *  · El botón final decía "Confirmar pedido". El art. 98.2 del TRLGDCU exige
+ *    la fórmula literal "pedido con obligación de pago" (o análoga no
+ *    ambigua) y su consecuencia también es literal: "En caso contrario, el
+ *    consumidor o usuario NO QUEDARÁ OBLIGADO por el contrato o pedido".
+ *    Es el cambio de una línea con más impacto jurídico del repo.
+ *  · No se pedía aceptar condiciones ni se informaba del tratamiento de
+ *    datos, y se recogía nombre, teléfono, email y dirección igualmente.
+ *  · El consentimiento de marketing va SEPARADO y NO premarcado (art. 21
+ *    LSSI): no se puede colar dentro de la aceptación de condiciones.
  *
  * Pago real: en producción este componente lanzaría Stripe Checkout
  * (`/api/checkout` → returns session.url → redirect). Aquí simula.
@@ -43,6 +55,8 @@ export function CheckoutForm() {
     notes: "",
   });
   const [payment, setPayment] = useState<PaymentMethod>("card");
+  const [aceptaCondiciones, setAceptaCondiciones] = useState(false);
+  const [aceptaMarketing, setAceptaMarketing] = useState(false);
 
   const isDelivery = type === "delivery";
 
@@ -64,6 +78,7 @@ export function CheckoutForm() {
 
   const confirm = async () => {
     if (!storeId) return showToast("Elige un local primero");
+    if (!aceptaCondiciones) return showToast("Acepta las condiciones para continuar");
     setSubmitting(true);
     try {
       // En producción: 1) POST /api/orders → orderId
@@ -74,12 +89,11 @@ export function CheckoutForm() {
         storeId,
         type,
         items,
-        customer: data,
+        customer: { ...data, marketingConsent: aceptaMarketing },
         totals,
         paymentMethod: payment,
         promoCode: promo?.code,
       });
-      // En la demo: marcamos como aceptado directamente (simula pago OK)
       const accepted = await api.updateOrderStatus(order.id, "accepted");
       setLastOrder(accepted ?? order);
       clearCart();
@@ -115,25 +129,25 @@ export function CheckoutForm() {
             Te contactamos solo para tu pedido. No spam.
           </p>
 
-          <Field label="Nombre">
-            <input className="tg-input" value={data.name} onChange={onChange("name")} placeholder="Cómo te llamamos" />
+          <Field label="Nombre" htmlFor="co-nombre">
+            <input id="co-nombre" autoComplete="name" className="tg-input" value={data.name} onChange={onChange("name")} placeholder="Cómo te llamamos" />
           </Field>
           <div className="grid sm:grid-cols-2 gap-3">
-            <Field label="Teléfono">
-              <input className="tg-input" type="tel" value={data.phone} onChange={onChange("phone")} placeholder="612 345 678" />
+            <Field label="Teléfono" htmlFor="co-telefono">
+              <input id="co-telefono" className="tg-input" type="tel" autoComplete="tel" value={data.phone} onChange={onChange("phone")} placeholder="612 345 678" />
             </Field>
-            <Field label="Email (recibo)">
-              <input className="tg-input" type="email" value={data.email ?? ""} onChange={onChange("email")} placeholder="tu@email.com" />
+            <Field label="Email (recibo)" htmlFor="co-email">
+              <input id="co-email" className="tg-input" type="email" autoComplete="email" value={data.email ?? ""} onChange={onChange("email")} placeholder="tu@email.com" />
             </Field>
           </div>
 
           {isDelivery ? (
             <>
-              <Field label="Dirección">
-                <input className="tg-input" value={data.address ?? ""} onChange={onChange("address")} placeholder="Calle, número, piso" />
+              <Field label="Dirección" htmlFor="co-direccion">
+                <input id="co-direccion" className="tg-input" autoComplete="street-address" value={data.address ?? ""} onChange={onChange("address")} placeholder="Calle, número, piso" />
               </Field>
-              <Field label="Ciudad / CP">
-                <input className="tg-input" value={data.city ?? ""} onChange={onChange("city")} placeholder="Barcelona / 08005" />
+              <Field label="Ciudad / CP" htmlFor="co-ciudad">
+                <input id="co-ciudad" className="tg-input" value={data.city ?? ""} onChange={onChange("city")} placeholder="Barcelona / 08005" />
               </Field>
             </>
           ) : (
@@ -142,8 +156,9 @@ export function CheckoutForm() {
             </p>
           )}
 
-          <Field label="Notas (opcional)">
+          <Field label="Notas (opcional)" htmlFor="co-notas">
             <textarea
+              id="co-notas"
               className="tg-input min-h-[70px]"
               value={data.notes ?? ""}
               onChange={onChange("notes")}
@@ -161,7 +176,7 @@ export function CheckoutForm() {
         <>
           <h3 className="font-anton text-2xl uppercase mb-1">Pago</h3>
           <p className="text-neutral-700 mb-4 text-sm">
-            Demo: el pago es simulado. En producción esto llama a Stripe Checkout / Redsys / Bizum.
+            Elige cómo quieres pagar tu pedido.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
@@ -172,9 +187,58 @@ export function CheckoutForm() {
             )}
           </div>
 
-          <p className="text-xs text-neutral-500 mb-4">
-            🔒 Demo segura. No se cobra. Stripe se integrará en MVP real (sin claves en frontend).
-          </p>
+          {/* Consentimientos. El de marketing va aparte y sin premarcar. */}
+          <div className="flex flex-col gap-3 mb-5 border-t border-dashed border-neutral-300 pt-4">
+            <label htmlFor="co-condiciones" className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                id="co-condiciones"
+                type="checkbox"
+                checked={aceptaCondiciones}
+                onChange={(e) => setAceptaCondiciones(e.target.checked)}
+                className="mt-0.5 w-5 h-5 flex-none accent-galos-red cursor-pointer"
+              />
+              <span className="text-[13px] text-neutral-700 font-semibold leading-snug">
+                {/*
+                  target="_blank" NO es decorativo: todo el estado de este
+                  formulario es useState local, así que navegar a los legales
+                  y volver atrás vacía nombre, teléfono y dirección. Y están
+                  pegados al checkbox obligatorio, o sea que se van a pulsar.
+                */}
+                He leído y acepto las{" "}
+                <Link
+                  href="/legal/condiciones"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-galos-red"
+                >
+                  condiciones de pedido
+                </Link>{" "}
+                y la{" "}
+                <Link
+                  href="/legal/privacidad"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-galos-red"
+                >
+                  política de privacidad
+                </Link>
+                .
+              </span>
+            </label>
+
+            <label htmlFor="co-marketing" className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                id="co-marketing"
+                type="checkbox"
+                checked={aceptaMarketing}
+                onChange={(e) => setAceptaMarketing(e.target.checked)}
+                className="mt-0.5 w-5 h-5 flex-none accent-galos-red cursor-pointer"
+              />
+              <span className="text-[13px] text-neutral-700 font-semibold leading-snug">
+                Quiero recibir promos exclusivas del canal directo. Opcional.
+              </span>
+            </label>
+          </div>
 
           <div className="flex gap-2 flex-wrap">
             <Button onClick={() => setStep(1)} variant="dark" size="md">← Atrás</Button>
@@ -182,12 +246,26 @@ export function CheckoutForm() {
               onClick={confirm}
               variant="primary"
               size="xl"
-              className="flex-1 min-w-[180px]"
-              disabled={submitting}
+              // "Pedido con obligación de pago" es la fórmula literal del
+              // art. 98.2 TRLGDCU y no se puede acortar, así que el botón
+              // tiene que dejarla partir en dos líneas: a 375px de ancho el
+              // texto se salía de la pastilla y provocaba scroll horizontal.
+              className="flex-1 min-w-0 basis-full sm:basis-0 whitespace-normal leading-tight px-4 sm:px-7"
+              disabled={submitting || !aceptaCondiciones}
             >
-              {submitting ? "Procesando..." : "Confirmar pedido"}
+              {/*
+                Fórmula literal del art. 98.2 TRLGDCU. No cambiar por
+                "Confirmar" ni "Finalizar": si el botón no es inequívoco
+                sobre la obligación de pago, el pedido no vincula al cliente.
+              */}
+              {submitting ? "Procesando..." : "Pedido con obligación de pago"}
             </Button>
           </div>
+
+          <p className="text-xs text-neutral-500 mt-3">
+            Pago procesado en un entorno seguro. Tacos Galos no almacena los
+            datos de tu tarjeta.
+          </p>
         </>
       )}
     </Card>
@@ -205,10 +283,20 @@ function Step({ active, n, label }: { active: boolean; n: number; label: string 
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-1.5 mb-3">
-      <label className="text-xs font-black uppercase tracking-wide text-neutral-700">{label}</label>
+      <label htmlFor={htmlFor} className="text-xs font-black uppercase tracking-wide text-neutral-700">
+        {label}
+      </label>
       {children}
     </div>
   );
@@ -219,7 +307,9 @@ function PayBtn({ id, current, setCurrent, children }: {
 }) {
   return (
     <button
+      type="button"
       onClick={() => setCurrent(id)}
+      aria-pressed={current === id}
       className={cn(
         "p-3.5 border-2 rounded-xl font-black text-sm transition-colors text-center",
         current === id

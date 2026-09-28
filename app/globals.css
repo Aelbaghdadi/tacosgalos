@@ -49,9 +49,39 @@
       3px 3px 0 theme("colors.white");
   }
 
-  /* Variante "step number" usada en CreateYourTacoSteps */
-  .tg-step-num {
-    -webkit-text-stroke: 2px theme("colors.galos.black");
+  /* ── Entrada del hero ──────────────────────────────────────────────
+     Animación de CARGA, no de scroll: se reproduce una vez al abrir la
+     página y no depende de IntersectionObserver ni de dónde esté la rueda.
+     Es justo lo contrario de los reveals que quitamos.
+     El retardo de cada elemento llega por --tg-d desde el componente, y el
+     bloque de prefers-reduced-motion de más abajo la anula entera. */
+  .tg-entra {
+    animation: tgEntra 0.45s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+    animation-delay: var(--tg-d, 0ms);
+  }
+
+  /* Igual, pero SIN tocar transform: para elementos que ya vienen rotados
+     (las pegatinas del hero) y a los que tgEntra les borraría el giro. */
+  .tg-aparece {
+    animation: tgAparece 0.45s ease both;
+    animation-delay: var(--tg-d, 0ms);
+  }
+
+  /* ── Reveal ligado al scroll, SIN JavaScript ───────────────────────
+     Regla de oro: el contenido es visible POR DEFECTO. La animación solo
+     se añade dentro del @supports de más abajo, así que si el navegador no
+     soporta animation-timeline, si el usuario pide menos movimiento, o si
+     falla cualquier cosa, el texto simplemente está ahí.
+
+     Es imposible que se quede en blanco, que es justo el fallo que tiene
+     CRAV: saltando a mitad de su página hay secciones que no aparecen
+     porque su reveal nunca se dispara. Sin JS no hay observador que se
+     pueda perder el disparo, y navegar directo a #capas funciona igual.
+
+     Contrapartida honesta: en Safari anterior a iOS 26 no hay animación,
+     solo contenido estático. Preferible a un texto invisible. */
+  .tg-sube {
+    /* deliberadamente vacío: el estado por defecto es "visible" */
   }
 
   /* === Inputs unificados === */
@@ -64,6 +94,76 @@
   .container {
     @apply mx-auto px-4;
     max-width: 1280px;
+  }
+}
+
+@keyframes tgEntra {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tgAparece {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tgSube {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* La animación del reveal vive SOLO aquí dentro. Ver la nota en .tg-sube. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .tg-sube {
+      animation: tgSube linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+    /* Los recortes entran algo más tarde que el texto, para que el titular se
+       lea antes de que empiece el baile.
+       Los dos extremos son del MISMO tipo de rango a propósito: mezclar
+       `entry` con `cover` los cruza en elementos pequeños y el recorte
+       parpadeaba entre 0 y 1 al seguir bajando. */
+    .tg-sube--tarde {
+      animation-range: entry 25% entry 100%;
+    }
+  }
+}
+
+/* ============================================================
+   Movimiento reducido.
+   No había NI UNA regla de prefers-reduced-motion en todo el proyecto,
+   mientras la marquesina gira en bucle infinito y cuatro mascotas flotan.
+   Quien lo pida en su sistema, ve la web quieta.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

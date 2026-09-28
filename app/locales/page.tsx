@@ -2,10 +2,16 @@ import Image from "next/image";
 import { StoreLocator } from "@/components/locations/StoreLocator";
 import { StickerTitle, Hl } from "@/components/ui/StickerTitle";
 import { buildMetadata } from "@/lib/seo";
+import { LOCALES_ABIERTOS_BASE } from "@/data/reto";
 
+/**
+ * El número de locales NO se escribe a mano en ningún sitio: sale de
+ * data/stores.ts. La cifra se movía cada pocas semanas y la web acababa
+ * contradiciendo a su propio perfil de Instagram.
+ */
 export const metadata = buildMetadata({
   title: "Locales · Tacos Galos en Cataluña",
-  description: "Encuentra tu Tacos Galos más cercano. 11 locales en Barcelona, área metropolitana y Vallès. Recogida en 8 min.",
+  description: `Encuentra tu Tacos Galos más cercano. ${LOCALES_ABIERTOS_BASE} locales en Barcelona, área metropolitana y Vallès. Recogida en 8 min.`,
   path: "/locales",
 });
 
@@ -23,7 +29,8 @@ export default function LocalesPage() {
               ENCUÉNTRANOS <Hl>CERCA</Hl>
             </StickerTitle>
             <p className="mt-3 text-lg max-w-xl text-red-100">
-              <strong className="text-white">11 locales y subiendo.</strong> Pide en tu local más cercano y recoge en 8 min.
+              <strong className="text-white">{LOCALES_ABIERTOS_BASE} locales y subiendo.</strong>{" "}
+              Pide en tu local más cercano y recoge en 8 min.
             </p>
           </div>
           <div className="flex justify-center lg:justify-end">

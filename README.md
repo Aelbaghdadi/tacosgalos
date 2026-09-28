@@ -41,9 +41,10 @@ Ver [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) para el plano completo, plan 
 
 ## Estado
 
-- ✅ UI completa con identidad visual oficial.
+- ✅ UI completa. La dirección visual (incluida la mascota 3D) es **propuesta propia**: la marca no tiene manual, ni logo vectorial, ni mascota.
 - ✅ Flujo de pedido funcional (mock, datos en localStorage).
-- ✅ 11 locales con SEO local listo.
+- ✅ Página por local con SEO local listo. El número de locales sale de `data/stores.ts`, nunca escrito a mano.
+- ✅ Marcador del reto en el hero + generador de creatividades 1080×1920 en `/panel/reto`.
 - ✅ Panel KDS visible y operable como demo.
 - 🔜 Supabase, Stripe, Bizum/Redsys, mini-app de impresión.
 
