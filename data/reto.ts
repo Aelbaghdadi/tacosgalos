@@ -60,9 +60,18 @@ export function retoCompletado(now: number, offset = 0): boolean {
   return diaCrudo(now, offset) > RETO.totalDias;
 }
 
-/** Días que faltan para la próxima apertura. 0 = hoy. */
-export function diasParaApertura(now: number): number {
-  return Math.max(0, Math.ceil((parseFecha(RETO.proximaApertura.fecha) - now) / MS_DIA));
+/**
+ * Días que faltan para la próxima apertura. 0 = hoy, `null` = la fecha ya pasó.
+ *
+ * ⚠️ Antes esto acotaba a cero con `Math.max(0, ...)`, así que en cuanto la
+ * fecha quedaba atrás la web se plantaba en «¡HOY!» y se quedaba ahí para
+ * siempre — anunciando una apertura para hoy diez días después de la fecha
+ * guardada. Distinguir "hoy" de "ya pasó" es justo lo que faltaba: pasada la
+ * fecha, la franja dice «Muy pronto» hasta que la marca confirme la nueva.
+ */
+export function diasParaApertura(now: number): number | null {
+  const dias = Math.ceil((parseFecha(RETO.proximaApertura.fecha) - now) / MS_DIA);
+  return dias < 0 ? null : dias;
 }
 
 /** Locales abiertos según los datos. Nunca hardcodear este número. */

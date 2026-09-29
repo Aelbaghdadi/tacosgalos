@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { STORES } from "@/data/stores";
-import {
-  RETO,
-  diaDelReto,
-  diasParaApertura,
-  retoCompletado,
-  LOCALES_PENDIENTES,
-} from "@/data/reto";
+import { RETO, diasParaApertura, LOCALES_PENDIENTES } from "@/data/reto";
 import { useRetoStore } from "@/store/retoStore";
 import { FranjaApertura } from "@/components/home/FranjaApertura";
 
@@ -40,8 +34,6 @@ export function Marcador() {
   useEffect(() => setMontado(true), []);
 
   const ahora = Date.now();
-  const dia = diaDelReto(ahora, dayOffset);
-  const completado = retoCompletado(ahora, dayOffset);
 
   /**
    * Contador a prueba de doble conteo: se cuenta sobre STORES, no sumando
@@ -62,13 +54,6 @@ export function Marcador() {
   const proxima = LOCALES_PENDIENTES.find((s) => !extraOpen.includes(s.slug));
   const faltan = diasParaApertura(ahora);
 
-  /* Antes de montar no se puede saber el día, así que la tira enseña el reto
-     en seco. Es cierto siempre y ocupa lo mismo, que es lo que importa. */
-  const estado = !montado
-    ? `Reto ${RETO.totalDias} días`
-    : completado
-      ? "Reto completado"
-      : `Día ${dia}/${RETO.totalDias}`;
 
   return (
     <div className="w-full">
@@ -81,10 +66,22 @@ export function Marcador() {
                      border-2 border-galos-gold/40 rounded-galos-sm px-3 py-2"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-galos-gold animate-pulse-scale flex-shrink-0" />
-          {/* El ancho mínimo es la reserva: "Día 7/60" y "Reto completado" no
-              miden lo mismo, y sin esto la tira daría un salto al hidratar. */}
-          <span className="font-anton uppercase tracking-wide text-[13px] sm:text-[15px] leading-none min-w-[118px] sm:min-w-[132px]">
-            {estado}
+          {/*
+            El reto se enuncia, no se cuenta.
+
+            Aquí ponía «DÍA 42/60» o «RETO COMPLETADO», derivado de un
+            `startDate` que es una ESTIMACIÓN nuestra a partir de sus
+            publicaciones — nunca lo confirmó la marca. Con esa fecha, la web
+            daba el reto por terminado, que es exactamente el tipo de dato que
+            el dueño comprueba de un vistazo porque lo conoce de memoria.
+
+            Lo que queda es la definición del reto, que es verificable y no
+            depende de ninguna fecha. El contador vuelve el día que la marca
+            confirme el arranque: `diaDelReto` y `retoCompletado` siguen en
+            data/reto.ts y el panel de demo los sigue usando.
+          */}
+          <span className="font-anton uppercase tracking-wide text-[13px] sm:text-[15px] leading-none whitespace-nowrap">
+            Reto {RETO.objetivoEuros.toLocaleString("es-ES")} € · {RETO.totalDias} días
           </span>
         </span>
 
@@ -105,14 +102,11 @@ export function Marcador() {
           48 px hacia abajo. */}
       <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1
                       min-h-[80px] min-[480px]:min-h-[52px] md:min-h-[32px]">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-white/55">
-          Objetivo {RETO.objetivoEuros.toLocaleString("es-ES")} € ·{" "}
-          {RETO.totalDias} días
-        </span>
         {montado && (
           <FranjaApertura
             ciudad={proxima?.city}
-            faltan={proxima ? faltan : undefined}
+            /* `null` = la fecha ya pasó → la franja dice «Muy pronto». */
+            faltan={proxima ? (faltan ?? undefined) : undefined}
           />
         )}
       </div>
