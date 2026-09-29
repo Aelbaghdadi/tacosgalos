@@ -1,4 +1,6 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Diagonal } from "@/components/ui/transiciones";
+import { FraseCinetica } from "@/components/home/FraseCinetica";
 import { Hl } from "@/components/ui/StickerTitle";
 import { REVIEWS } from "@/data/reviews";
 import { Card } from "@/components/ui/Card";
@@ -18,8 +20,19 @@ import { Card } from "@/components/ui/Card";
  */
 export function ReviewsSection() {
   return (
-    <section className="py-24 bg-galos-red text-white">
-      <div className="container mx-auto px-4">
+    <section className="relative py-24 bg-galos-red text-white">
+      {/* Corte diagonal espejado: la otra diagonal de la pagina sube hacia la
+          derecha, esta hacia la izquierda, para que no se lean como un patron. */}
+      <Diagonal color="#E30613" invertida />
+
+      {/*
+        Plano de fondo. La frase se mueve bastante mas que las tarjetas segun
+        pasa la seccion, y esa diferencia de velocidad es toda la profundidad
+        que necesita: no hace falta parallax en las tarjetas para notarla.
+      */}
+      <FraseCinetica texto="Gente que repite" />
+
+      <div className="container mx-auto px-4 relative z-10">
         <SectionHeading
           eyebrow="Lo que dicen"
           inverted

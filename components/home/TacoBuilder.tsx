@@ -218,7 +218,9 @@ export function TacoBuilder() {
       <div
         className={cn(
           "overflow-hidden flex flex-col items-center justify-center px-4",
-          "pt-[64px] md:pt-[120px] pb-6",
+          /* El `pb` crece con la onda que la seccion de promos monta encima:
+             sin este aire, la curva cortaba el precio del taco. */
+          "pt-[64px] md:pt-[120px] pb-12 sm:pb-20 lg:pb-28",
           quieto ? "min-h-[70svh]" : "sticky top-0 h-[100svh]"
         )}
       >

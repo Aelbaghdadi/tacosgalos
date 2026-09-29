@@ -6,6 +6,7 @@ import { CategoryTabs } from "./CategoryTabs";
 import { ProductCard } from "./ProductCard";
 import { CATEGORIES, PRODUCTS } from "@/data/products";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Diagonal, Puente } from "@/components/ui/transiciones";
 import { Hl } from "@/components/ui/StickerTitle";
 import type { ProductCategoryId } from "@/types";
 
@@ -20,8 +21,31 @@ export function MenuSection({ initialCategory = "tacos_jefe", showHeading = true
   const products = PRODUCTS.filter((p) => p.category === active && p.available);
 
   return (
-    <section id="carta" className="py-24 bg-galos-red text-white">
-      <div className="container mx-auto px-4">
+    <section id="carta" className="relative pt-28 pb-24 bg-galos-red text-white">
+      {/* Salto de color fuerte —blanco a rojo—, asi que corte en angulo y no
+          curva: el contraste ya es un acontecimiento por si solo. */}
+      <Diagonal color="#E30613" />
+
+      {/*
+        EL PUENTE. El sello arranca arriba, sobre el blanco de "Como funciona",
+        y baja hasta quedarse dentro del rojo de la carta. Es el unico elemento
+        de la pagina que pertenece a dos secciones a la vez: cierra los cinco
+        pasos y abre la carta con el mismo gesto.
+      */}
+      <Puente className="right-[5%] sm:right-[8%] lg:right-[11%]" giro={-8}>
+        <span
+          className="flex items-center justify-center text-center
+                     w-[96px] h-[96px] sm:w-[124px] sm:h-[124px]
+                     rounded-full bg-galos-gold text-galos-black
+                     border-[3px] border-galos-black shadow-hard
+                     font-anton uppercase leading-[0.9] tracking-tight
+                     text-[15px] sm:text-[19px] px-2"
+        >
+          Tu turno
+        </span>
+      </Puente>
+
+      <div className="container mx-auto px-4 relative z-10">
         {showHeading && (
           <SectionHeading
             eyebrow="La carta"

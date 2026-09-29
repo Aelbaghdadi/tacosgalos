@@ -1,6 +1,7 @@
 "use client";
 
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Onda } from "@/components/ui/Onda";
 import { Hl } from "@/components/ui/StickerTitle";
 import { PROMOS } from "@/data/promos";
 import { useCartStore } from "@/store/cartStore";
@@ -67,7 +68,10 @@ export function PromoSection() {
   };
 
   return (
-    <section id="promos" className="py-24 bg-galos-cream">
+    <section id="promos" className="relative pt-16 pb-24 bg-galos-cream">
+      {/* Se sale del rojo del constructor por una curva blanda: el taco ya esta
+          hecho y la pagina baja las revoluciones antes de las promos. */}
+      <Onda color="#FFF8F0" invertida />
       <div className="container mx-auto px-4">
         <SectionHeading
           eyebrow="Promos en directo"

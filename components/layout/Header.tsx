@@ -82,10 +82,10 @@ export function Header() {
                      h-10 px-3 rounded-full border-2 border-galos-black
                      shadow-[0_3px_0_0_#0F0F0F]
                      active:translate-y-[2px] active:shadow-[0_1px_0_0_#0F0F0F]
-                     hover:bg-galos-red-dark transition-all whitespace-nowrap"
+                     hover:bg-galos-red-dark transition-all whitespace-nowrap group"
         >
           Empezar pedido
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1" />
         </Link>
 
         {/* DESKTOP NAV */}
@@ -105,7 +105,15 @@ export function Header() {
               className="font-extrabold uppercase text-[13px] tracking-wide relative py-1 group"
             >
               {item.label}
-              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-galos-red origin-left scale-x-0 group-hover:scale-x-100 transition-transform" />
+              {/* El subrayado no aparece y desaparece: entra por la izquierda y sale
+                  por la derecha. Lo hace el cambio de `origin` entre los dos
+                  estados, sin una sola linea de JS. */}
+              <span
+                className="absolute inset-x-0 bottom-0 h-0.5 bg-galos-red
+                           origin-right scale-x-0 transition-transform duration-300 ease-out
+                           group-hover:origin-left group-hover:scale-x-100
+                           group-focus-visible:origin-left group-focus-visible:scale-x-100"
+              />
             </Link>
           ))}
         </nav>
@@ -120,16 +128,23 @@ export function Header() {
           <button
             onClick={openCart}
             aria-label={`Ver carrito${count > 0 ? ` (${count})` : ""}`}
-            className="relative inline-flex items-center justify-center
+            className="group relative inline-flex items-center justify-center
                        w-10 h-10 text-galos-black hover:text-galos-red transition-colors
                        md:w-auto md:h-auto md:gap-2 md:pl-3 md:pr-4 md:py-2 md:rounded-full
                        md:bg-galos-black md:text-white md:hover:bg-galos-red
                        md:text-xs md:font-black md:uppercase md:tracking-wide"
           >
-            <ShoppingBagIcon className="w-6 h-6 md:w-4 md:h-4" />
+            <ShoppingBagIcon className="w-6 h-6 md:w-4 md:h-4 transition-transform duration-200 group-hover:-rotate-6 group-active:scale-90" />
             <span className="hidden md:inline">Mi pedido</span>
             {count > 0 && (
-              <span
+              /* `key={count}` a proposito: al cambiar la cifra el nodo se
+                 remonta y el muelle vuelve a dispararse, asi que anadir al
+                 carrito se NOTA sin necesidad de orquestar nada. */
+              <motion.span
+                key={count}
+                initial={quieto ? false : { scale: 0.4 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 620, damping: 16 }}
                 className="absolute top-0.5 right-0.5 md:static md:ml-1
                            bg-galos-red md:bg-galos-red text-white
                            min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center
@@ -137,7 +152,7 @@ export function Header() {
                            border-2 border-white md:border-0"
               >
                 {count}
-              </span>
+              </motion.span>
             )}
           </button>
 
@@ -155,7 +170,8 @@ export function Header() {
             aria-label={navOpen ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={navOpen}
             className="md:hidden inline-flex flex-col items-center justify-center gap-[5px]
-                       w-10 h-10 text-galos-black hover:text-galos-red transition-colors"
+                       w-10 h-10 text-galos-black hover:text-galos-red
+                       transition-[color,transform] active:scale-90"
           >
             <span
               className={cn(
