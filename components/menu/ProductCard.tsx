@@ -4,6 +4,8 @@ import Image from "next/image";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { PromoCard } from "@/components/promo/PromoCard";
+import { promoDe } from "@/data/promos-producto";
 import { useCartStore } from "@/store/cartStore";
 import { useUIStore } from "@/store/uiStore";
 import { formatPrice } from "@/lib/utils";
@@ -33,11 +35,17 @@ export function ProductCard({ product }: { product: Product }) {
     }
   };
 
+  const promo = promoDe(product.id);
+
   return (
     <Card className="flex flex-col relative overflow-hidden">
       {/* Imagen del producto con badges flotantes */}
       <div className="relative aspect-[4/3] w-full bg-galos-cream border-b-[3px] border-galos-black">
-        {product.imageUrl ? (
+        {promo ? (
+          /* Creatividad reconstruida: el titular es texto real, no imagen.
+             Ver data/promos-producto.ts. */
+          <PromoCard promo={promo} nombre={product.name} />
+        ) : product.imageUrl ? (
           <Image
             src={product.imageUrl}
             alt={product.name}
