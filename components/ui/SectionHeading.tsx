@@ -45,7 +45,7 @@ export function SectionHeading({
         <p
           className={cn(
             "mt-3 text-base sm:text-lg font-semibold",
-            inverted ? "text-red-100" : "text-neutral-600"
+            inverted ? "text-white" : "text-neutral-600"
           )}
         >
           {subtitle}

@@ -128,6 +128,31 @@
   }
 }
 
+/* ── Foco de teclado ───────────────────────────────────────────────
+   No habia NINGUN estilo de foco en todo el proyecto: quien navega con el
+   teclado dependia del anillo por defecto del navegador, que sobre los botones
+   de marca —negro sobre rojo, negro sobre dorado— practicamente no se ve. Y
+   `.tg-input` lo quitaba del todo con `focus:outline-none`.
+
+   El dorado es el unico color de la paleta que contrasta contra los cuatro
+   fondos de la web (rojo, negro, blanco y crema), asi que sirve de anillo
+   unico. Va en `:focus-visible` y no en `:focus`, de modo que aparece al
+   tabular y no al hacer clic: no se toca el diseno para quien usa el raton.
+
+   El doble anillo (negro fuera, dorado dentro) es lo que lo hace visible
+   tambien sobre el propio dorado de la marca. */
+:focus-visible {
+  outline: 3px solid theme("colors.galos.gold");
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(15, 15, 15, 0.55);
+  border-radius: 4px;
+}
+
+/* Los campos ya marcaban el foco cambiando el borde; el anillo se suma. */
+.tg-input:focus-visible {
+  outline-offset: 0;
+}
+
 /* ── Golpe tipográfico del titular del hero ────────────────────────
    Dos animaciones sobre dos nodos: la de fuera abre un `clip-path` de abajo
    arriba, la de dentro sube el texto y lo endereza. Esa diferencia es lo que
@@ -212,16 +237,30 @@
   }
 }
 
+/* ── Altura de las barras fijas ────────────────────────────────────
+   El mismo número estaba escrito en tres sitios: en el propio Header, en
+   `.pt-page` y en el padding del constructor de tacos. Con tres copias, subir
+   el header 4 px obliga a acordarse de los otros dos — y el corte tampoco
+   coincidía: `.pt-page` usaba `max-width: 768px` mientras Tailwind aplica
+   `md:` a partir de 768, así que justo a 768 px la página reservaba 64 px para
+   un header que ya medía 120.
+
+   Aquí y en ningún otro sitio. El corte es el de Tailwind. */
+:root {
+  /* Móvil: solo el header. La topbar está oculta. */
+  --tg-header: 64px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    /* Escritorio: topbar (44px) + header (76px) */
+    --tg-header: 120px;
+  }
+}
+
 @layer utilities {
   /* Padding de la página principal por encima de los headers fijos */
   .pt-page {
-    /* Desktop: topbar (44px) + header (76px) */
-    padding-top: calc(44px + 76px);
-  }
-  /* Móvil: solo header (64px) — topbar oculto */
-  @media (max-width: 768px) {
-    .pt-page {
-      padding-top: 64px;
-    }
+    padding-top: var(--tg-header);
   }
 }

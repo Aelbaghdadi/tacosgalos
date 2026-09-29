@@ -142,18 +142,37 @@ function Tarjeta({ pieza }: { pieza: Pieza }) {
                  transition-transform hover:-translate-y-1"
     >
       {pieza.tipo === "video" ? (
-        <video
-          ref={ref}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={pieza.poster}
-          aria-label={pieza.titulo}
-          className="block w-full h-full object-cover"
-        >
-          <source src={pieza.src} type="video/mp4" />
-        </video>
+        /*
+          El poster NO va en el atributo `poster`.
+          El navegador se descarga el poster de un <video> nada mas parsear el
+          documento, sin esperar a que se acerque: los dos posters de esta
+          seccion son 783 KB y la seccion vive quince pantallas mas abajo, asi
+          que era el 61 % de todo el peso de imagen de la home a cambio de dos
+          miniaturas de 260 px que mucha gente nunca llega a ver.
+
+          Puesto como <Image> debajo del video, se descarga cuando toca. El
+          video queda transparente hasta que carga, y el poster se ve a traves.
+        */
+        <>
+          <Image
+            src={pieza.poster}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 62vw, 220px"
+            className="object-cover"
+          />
+          <video
+            ref={ref}
+            muted
+            loop
+            playsInline
+            preload="none"
+            aria-label={pieza.titulo}
+            className="relative block w-full h-full object-cover"
+          >
+            <source src={pieza.src} type="video/mp4" />
+          </video>
+        </>
       ) : (
         /*
           Recorte del cromo de Instagram. El origen es 945×2048 y lleva ~17%

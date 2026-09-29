@@ -45,10 +45,10 @@ export function FranjaApertura({
         >
           <span className="inline-flex items-center gap-1.5 pl-3 pr-2.5 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-galos-gold animate-pulse-scale flex-shrink-0" />
-            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-white">
+            <span className="text-[11px] font-black uppercase tracking-wider text-white">
               Apertura {ciudad}
             </span>
-            <span className="text-[10px] sm:text-[11px] font-bold text-galos-gold tabular-nums">
+            <span className="text-[11px] font-bold text-galos-gold tabular-nums">
               {faltan == null
                 ? "Muy pronto"
                 : faltan === 0
@@ -68,9 +68,9 @@ export function FranjaApertura({
 
         <button
           onClick={() => setModo("local")}
-          className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider
+          className="text-[11px] font-black uppercase tracking-wider
                      text-white/60 hover:text-white underline underline-offset-4
-                     decoration-white/30 hover:decoration-white transition-colors py-1"
+                     decoration-white/30 hover:decoration-white transition-colors py-2"
         >
           ¿Tienes un local?
         </button>

@@ -96,7 +96,9 @@ export function PromoSection() {
               <h3 className="font-anton text-3xl sm:text-4xl uppercase leading-none tracking-wide">
                 {p.title}
               </h3>
-              <p className="text-sm font-bold opacity-90 flex-1">{p.description}</p>
+              {/* Sin `opacity`: al 90 % el texto no llegaba al contraste minimo
+                  sobre el rojo ni sobre el dorado de las tarjetas. */}
+              <p className="text-sm font-bold flex-1">{p.description}</p>
               {p.code && (
                 <span className="self-start font-anton text-base sm:text-lg tracking-[2px] px-3 py-1.5 border-2 border-current border-dashed rounded-md uppercase">
                   {p.code}

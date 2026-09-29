@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect , useRef} from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCartStore, useCartTotals } from "@/store/cartStore";
@@ -16,6 +16,7 @@ import { CartItem } from "./CartItem";
  */
 export function CartDrawer() {
   const open = useUIStore((s) => s.cartOpen);
+  const capaRef = useRef<HTMLElement>(null);
   const closeCart = useUIStore((s) => s.closeCart);
   const openLocator = useUIStore((s) => s.openLocator);
   const showToast = useUIStore((s) => s.showToast);
@@ -48,8 +49,26 @@ export function CartDrawer() {
     router.push("/checkout");
   };
 
+  /*
+    `aria-hidden` saca el diálogo cerrado del árbol de accesibilidad, pero NO
+    del orden de tabulación: con el teclado se seguía entrando dentro. Medido:
+    los cuatro diálogos de la web estaban siempre en el DOM y sus controles
+    respondían a `focus()` con el modal cerrado — solo el localizador son 12
+    botones invisibles por los que había que pasar tabulando.
+
+    `inert` es lo que corresponde: desactiva foco, clic y lectura de todo el
+    subárbol, y se quita al abrir. Va por atributo y no por prop porque React
+    18 no conoce `inert` y lo tiraría con un aviso.
+  */
+  useEffect(() => {
+    const capa = capaRef.current;
+    if (!capa) return;
+    if (open) capa.removeAttribute("inert");
+    else capa.setAttribute("inert", "");
+  }, [open]);
+
   return (
-    <aside aria-hidden={!open} className={cn("fixed inset-0 z-[200]", open ? "pointer-events-auto" : "pointer-events-none")}>
+    <aside ref={capaRef} aria-hidden={!open} className={cn("fixed inset-0 z-[200]", open ? "pointer-events-auto" : "pointer-events-none")}>
       <div
         className={cn("absolute inset-0 bg-black/55 transition-opacity duration-200", open ? "opacity-100" : "opacity-0")}
         onClick={closeCart}

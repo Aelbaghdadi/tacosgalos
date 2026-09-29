@@ -8,7 +8,9 @@ const variants: Record<Variant, string> = {
   halal: "bg-galos-gold text-galos-black border-galos-black",
   new: "bg-galos-red text-white border-galos-black",
   top: "bg-galos-black text-galos-gold border-galos-black",
-  spicy: "bg-orange-500 text-white border-galos-black",
+  /* Blanco sobre naranja-500 daba 2,8:1. En negro sobre el mismo
+     naranja sube a 8,9:1 y la etiqueta sigue leyendose como "picante". */
+  spicy: "bg-orange-500 text-galos-black border-galos-black",
   promo: "bg-galos-gold text-galos-black border-galos-black",
   ghost: "bg-black/35 text-white border-white/40",
 };

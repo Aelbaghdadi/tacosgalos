@@ -23,7 +23,8 @@ export function TopBar() {
         <button
           onClick={openLocator}
           className="group flex items-center gap-2 min-w-0 hover:text-galos-gold transition-colors"
-          aria-label={store ? `Local actual: ${store.city}. Cambiar.` : "Elegir local"}
+          /* Sin `aria-label`: el texto visible ya nombra el boton, y uno
+             distinto rompe la correspondencia que pide la WCAG 2.5.3. */
         >
           <PinIcon className="w-4 h-4 flex-shrink-0 text-galos-gold" />
           <span className="text-white/55 hidden sm:inline">

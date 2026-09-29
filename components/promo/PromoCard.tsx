@@ -53,10 +53,28 @@ function Pizarra({ promo, titulo }: { promo: PromoProducto; titulo: string }) {
         }}
       />
 
-      {/* Titular. El rojo del original medía #EC0604 — es el rojo de marca. */}
+      {/*
+        ZONA SEGURA DEL TITULAR.
+      
+        El nombre del producto es lo primero que hay que poder leer, y en las dos
+        plantillas competia con todo lo demas: la chapa de la mascota y el sello
+        vivian en SU MISMA franja, y el producto subia hasta rozarla.
+      
+        Ahora la franja del 16 % al 32 % de alto es solo del titulo. Las
+        decoraciones se van arriba del todo —por encima del 15 %, donde tambien
+        estan los badges de la tarjeta— y el producto empieza por debajo del 38 %.
+        Nadie mas entra ahi. No se ha hecho el titulo enorme: se le ha hecho sitio.
+      */}
+      
       <h3
-        className="absolute left-1/2 top-[15%] z-20 -translate-x-1/2 -rotate-2 whitespace-nowrap font-anton uppercase leading-none text-galos-red text-[9cqi]"
-        style={{ textShadow: "0 0.5cqi 0 rgba(0,0,0,.55)" }}
+        className="absolute inset-x-[4%] top-[19%] z-20 -rotate-2 whitespace-nowrap text-center font-anton uppercase leading-none text-galos-red text-[9.6cqi]"
+        style={{
+          /* Perfil crema finisimo: sobre el ladrillo casi negro el rojo de
+             marca se queda en 3,4:1 y el nombre se pierde. El contorno es el
+             mismo recurso que usa el titular del hero. */
+          WebkitTextStroke: "0.22cqi #FFF8F0",
+          textShadow: "0 0.55cqi 0 rgba(0,0,0,.6)",
+        }}
       >
         {titulo}
       </h3>
@@ -86,7 +104,7 @@ function Pizarra({ promo, titulo }: { promo: PromoProducto; titulo: string }) {
           más alto invadiera el titular. Con alto fijo, el ancho se ajusta solo
           y la colisión es imposible sea cual sea la proporción.
         */
-        className="absolute inset-x-[6%] bottom-[7%] z-10 h-[56%] select-none object-contain object-bottom transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
+        className="absolute inset-x-[6%] bottom-[6%] z-10 h-[53%] select-none object-contain object-bottom transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
       />
 
       {/* Chapa de la mascota asomando por la esquina, como en el original */}
@@ -97,7 +115,7 @@ function Pizarra({ promo, titulo }: { promo: PromoProducto; titulo: string }) {
         aria-hidden
         loading="lazy"
         draggable={false}
-        className="absolute -right-[1cqi] top-[11%] z-20 w-[13cqi] rotate-[18deg] select-none opacity-90"
+        className="absolute -right-[1cqi] top-[1%] z-20 w-[9.5cqi] rotate-[18deg] select-none opacity-90"
       />
     </>
   );
@@ -108,7 +126,7 @@ function SelloGlutenFree() {
     <svg
       viewBox="0 0 100 100"
       aria-hidden
-      className="absolute right-[3%] top-[12%] z-20 w-[16cqi] drop-shadow-[0_0.4cqi_0.6cqi_rgba(0,0,0,.35)]"
+      className="absolute right-[3%] top-[2%] z-20 w-[12.5cqi] drop-shadow-[0_0.4cqi_0.6cqi_rgba(0,0,0,.35)]"
     >
       <circle cx="50" cy="50" r="48" fill="#0F0F0F" />
       <circle cx="50" cy="50" r="42" fill="none" stroke="#FFF8F0" strokeWidth="1.6" />
@@ -179,14 +197,17 @@ function Estallido({ promo, titulo }: { promo: PromoProducto; titulo: string }) 
         }}
       />
 
-      <p className="absolute left-1/2 top-[14%] z-20 -translate-x-1/2 whitespace-nowrap font-anton uppercase leading-none tracking-[0.3em] text-[3.6cqi]">
+      <p className="absolute left-1/2 top-[9%] z-20 -translate-x-1/2 whitespace-nowrap font-anton uppercase leading-none tracking-[0.3em] text-[3.6cqi]">
         <span className="text-white">Bowls </span>
         <span className="text-galos-red">Galos</span>
       </p>
 
       <h3
-        className="absolute left-1/2 top-[21%] z-20 -translate-x-1/2 whitespace-nowrap font-anton uppercase leading-none text-galos-cream text-[9cqi]"
-        style={{ textShadow: "0 0.5cqi 0 rgba(0,0,0,.45)" }}
+        className="absolute inset-x-[4%] top-[18%] z-20 whitespace-nowrap text-center font-anton uppercase leading-none text-galos-cream text-[9.6cqi]"
+        style={{
+          WebkitTextStroke: "0.22cqi rgba(0,0,0,.45)",
+          textShadow: "0 0.55cqi 0 rgba(0,0,0,.5)",
+        }}
       >
         {titulo}
       </h3>
@@ -202,7 +223,7 @@ function Estallido({ promo, titulo }: { promo: PromoProducto; titulo: string }) 
         decoding="async"
         draggable={false}
         /* Mismo criterio que la pizarra: alto fijo, el ancho se ajusta solo. */
-        className="absolute inset-x-[12%] bottom-[1%] z-10 h-[62%] select-none object-contain object-bottom drop-shadow-[0_1cqi_1.2cqi_rgba(0,0,0,.3)] transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
+        className="absolute inset-x-[12%] bottom-[1%] z-10 h-[59%] select-none object-contain object-bottom drop-shadow-[0_1cqi_1.2cqi_rgba(0,0,0,.3)] transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
       />
     </>
   );

@@ -21,8 +21,37 @@ import type { ReactNode } from "react";
 
 export type Patron = "sube" | "cortina" | "escala" | "ladea";
 
-const MUELLE = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.7 };
-const SUAVE = { duration: 0.42, ease: [0.22, 0.8, 0.3, 1] as const };
+/* ────────────────────────────────────────────────────────────────────
+   LAS CUATRO CLASES DE MOVIMIENTO
+
+   Había trece muelles distintos repartidos por los componentes, casi todos
+   entre 420 y 500 de rigidez con amortiguaciones puestas a ojo. Eso no es un
+   sistema: es el mismo muelle con ruido. Y cuando todo rebota parecido, nada
+   destaca.
+
+   A partir de aquí solo hay cuatro clases, y cada animación declara a cuál
+   pertenece:
+
+     ENTRADA   — algo aparece. Llega con autoridad y se para; casi no rebota.
+     SUAVE     — algo cambia de estado. Sin muelle, por duración: los cambios
+                 de estado no deben tener personalidad, deben ser rápidos.
+     MICRO     — respuesta al dedo o al cursor. Rígido y corto: por debajo de
+                 120 ms se lee como "responde", no como "se anima".
+     AMBIENTE  — movimiento continuo de fondo. Blando y lento, nunca se para.
+
+   Y una quinta, deliberadamente aparte:
+
+     REBOTE    — el único rebote de verdad de toda la web. Se usa UNA vez, en
+                 el contador del carrito, porque ahí el rebote no es adorno:
+                 es el acuse de recibo de que el producto entró.
+   ──────────────────────────────────────────────────────────────────── */
+export const ENTRADA = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.7 };
+export const SUAVE = { duration: 0.42, ease: [0.22, 0.8, 0.3, 1] as const };
+export const MICRO = { type: "spring" as const, stiffness: 520, damping: 30, mass: 0.5 };
+export const AMBIENTE = { type: "spring" as const, stiffness: 46, damping: 18, mass: 0.7 };
+export const REBOTE = { type: "spring" as const, stiffness: 620, damping: 16 };
+
+const MUELLE = ENTRADA;
 
 const VARIANTES: Record<Patron, Variants> = {
   sube: {
@@ -139,6 +168,3 @@ export function Hijo({
     </Etiqueta>
   );
 }
-
-/** Muelle compartido por las microinteracciones (hover, tap, header). */
-export const MUELLE_UI = { type: "spring" as const, stiffness: 400, damping: 28 };

@@ -105,7 +105,7 @@ export function Marcador() {
           48 px hacia abajo. */}
       <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1
                       min-h-[80px] min-[480px]:min-h-[52px] md:min-h-[32px]">
-        <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white/55">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-white/55">
           Objetivo {RETO.objetivoEuros.toLocaleString("es-ES")} € ·{" "}
           {RETO.totalDias} días
         </span>

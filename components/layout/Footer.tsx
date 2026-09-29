@@ -45,9 +45,9 @@ export function Footer() {
         {/* ── CONECTA: redes + delivery ─────────────────────────────── */}
         <div className="mt-8 grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <h4 className="font-anton text-sm uppercase tracking-widest text-neutral-500 mb-3">
+            <h3 className="font-anton text-sm uppercase tracking-widest text-neutral-400 mb-3">
               Conecta
-            </h4>
+            </h3>
             <div className="flex flex-wrap gap-2">
               <SocialPill href={SOCIAL.instagram} label="@tacosgalos" icon={<InstagramIcon />} />
               <SocialPill href={SOCIAL.tiktok} label="@tacosgalos" icon={<TikTokIcon />} />
@@ -56,9 +56,9 @@ export function Footer() {
           </div>
 
           <div className="md:text-right">
-            <h4 className="font-anton text-sm uppercase tracking-widest text-neutral-500 mb-3">
+            <h3 className="font-anton text-sm uppercase tracking-widest text-neutral-400 mb-3">
               También en
-            </h4>
+            </h3>
             <div className="flex flex-wrap md:justify-end gap-2">
               <DeliveryPill href="https://glovoapp.com" label="Glovo" />
               <DeliveryPill href="https://www.ubereats.com" label="Uber Eats" />
@@ -76,7 +76,7 @@ export function Footer() {
         </div>
 
         {/* ── PIE: copyright + halal/alérgenos ──────────────────────── */}
-        <div className="mt-10 pt-5 border-t border-white/10 flex flex-col gap-2 text-[11px] text-neutral-500">
+        <div className="mt-10 pt-5 border-t border-white/10 flex flex-col gap-2 text-[11px] text-neutral-400">
           <p>© {year} Tacos Galos. Todos los derechos reservados.</p>
           <p className="leading-relaxed">
             {/* "certificados" implica una certificadora concreta que nadie ha
@@ -106,15 +106,19 @@ function FooterCol({
 }) {
   return (
     <div>
-      <h4 className="font-anton text-sm uppercase tracking-widest text-neutral-500 mb-3">
+      <h3 className="font-anton text-sm uppercase tracking-widest text-neutral-400 mb-3">
         {title}
-      </h4>
-      <ul className="space-y-1.5">
+      </h3>
+      {/* El area pulsable la da el padding del enlace, no el hueco entre
+          ellos: en movil median 19 px de alto, por debajo del minimo de 24
+          que pide la WCAG 2.2. El ritmo visual se mantiene bajando el
+          `space-y` en la misma proporcion. */}
+      <ul className="space-y-0.5">
         {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
-              className="group inline-flex items-center gap-1.5 text-[13.5px] text-neutral-300 hover:text-galos-gold transition-colors"
+              className="group inline-flex items-center gap-1.5 py-1.5 text-[13.5px] text-neutral-300 hover:text-galos-gold transition-colors"
             >
               <span className="w-1 h-1 rounded-full bg-galos-red group-hover:bg-galos-gold transition-colors" />
               {l.label}

@@ -43,6 +43,9 @@ export function ReviewsSection() {
           {REVIEWS.map((r) => (
             <Card key={r.id} className="p-6 text-galos-black">
               <div
+                /* Sin `role`, un div no puede llevar `aria-label`: la regla
+                   aria-prohibited-attr lo marca y el lector se lo salta. */
+                role="img"
                 className="text-galos-gold text-xl tracking-widest mb-2"
                 aria-label={`${r.rating} de 5 estrellas`}
               >

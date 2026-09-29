@@ -14,6 +14,7 @@ interface Props {
 
 export function Modal({ open, onClose, children, size = "md", ariaLabel }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const capaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -35,10 +36,30 @@ export function Modal({ open, onClose, children, size = "md", ariaLabel }: Props
    */
   const [montado, setMontado] = useState(false);
   useEffect(() => setMontado(true), []);
+
+  /*
+    `aria-hidden` saca el diálogo cerrado del árbol de accesibilidad, pero NO
+    del orden de tabulación: con el teclado se seguía entrando dentro. Medido:
+    los cuatro diálogos de la web estaban siempre en el DOM y sus controles
+    respondían a `focus()` con el modal cerrado — solo el localizador son 12
+    botones invisibles por los que había que pasar tabulando.
+
+    `inert` es lo que corresponde: desactiva foco, clic y lectura de todo el
+    subárbol, y se quita al abrir. Va por atributo y no por prop porque React
+    18 no conoce `inert` y lo tiraría con un aviso.
+  */
+  useEffect(() => {
+    const capa = capaRef.current;
+    if (!capa) return;
+    if (open) capa.removeAttribute("inert");
+    else capa.setAttribute("inert", "");
+  }, [open, montado]);
+
   if (!montado) return null;
 
   return createPortal(
     <div
+      ref={capaRef}
       aria-hidden={!open}
       className={cn(
         "fixed inset-0 z-[250] transition-opacity",

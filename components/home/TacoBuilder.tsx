@@ -10,6 +10,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { OPTION_GROUPS } from "@/data/options";
+import { MICRO } from "@/components/motion/patrones";
 import { formatPrice, cn } from "@/lib/utils";
 
 /**
@@ -213,15 +214,34 @@ export function TacoBuilder() {
     <section
       ref={ref}
       id="crea"
-      className={cn("relative bg-galos-red", quieto ? "py-20" : "h-[340vh]")}
+      /* 340vh eran 3,4 pantallas de scroll en movil para montar el taco.
+         A 300 la coreografia es la misma —las cuatro etapas se reparten el
+         recorrido igual— pero se recorre en una flick menos. */
+      className={cn("relative bg-galos-red", quieto ? "py-20" : "h-[300vh]")}
     >
       <div
         className={cn(
           "overflow-hidden flex flex-col items-center justify-center px-4",
-          /* El `pb` crece con la onda que la seccion de promos monta encima:
-             sin este aire, la curva cortaba el precio del taco. */
-          "pt-[64px] md:pt-[120px] pb-12 sm:pb-20 lg:pb-28",
-          quieto ? "min-h-[70svh]" : "sticky top-0 h-[100svh]"
+          /*
+            El area util EMPIEZA debajo del header, no detras de el.
+
+            Antes el sticky ocupaba la ventana entera desde arriba y compensaba
+            con `pt-[64px] md:pt-[120px]` — justo la altura del header, ni un
+            pixel mas. Resultado medido: el encabezado de etapa arrancaba
+            exactamente en el borde inferior de la barra, pegado a ella.
+
+            Ahora el sticky se ancla DEBAJO del header y mide lo que queda de
+            ventana, asi que el `pt-5` de dentro es aire de verdad y no
+            compensacion. Los tiempos no se tocan: el progreso se mide sobre la
+            seccion de 300vh, no sobre esta caja.
+
+            El `pb` crece con la onda que la seccion de promos monta encima:
+            sin ese aire, la curva cortaba el precio del taco.
+          */
+          "pt-5 pb-12 sm:pb-20 lg:pb-28",
+          quieto
+            ? "min-h-[70svh]"
+            : "sticky top-[var(--tg-header)] h-[calc(100svh_-_var(--tg-header))]"
         )}
       >
         <div aria-hidden className="absolute inset-0 z-0">
@@ -285,7 +305,7 @@ export function TacoBuilder() {
             key={elegidoTam?.id}
             initial={quieto ? false : { scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 22 }}
+            transition={MICRO}
             className="absolute right-2 top-2 bg-galos-gold text-galos-black font-anton text-xl sm:text-2xl px-3 py-1 rounded-full border-[3px] border-galos-black shadow-hard-sm select-none"
           >
             {elegidoTam?.label}
@@ -299,7 +319,7 @@ export function TacoBuilder() {
               <motion.li
                 key={val.id}
                 animate={quieto ? undefined : { scale: on ? 1.06 : 1 }}
-                transition={{ type: "spring", stiffness: 480, damping: 26 }}
+                transition={MICRO}
                 className={cn(
                   "px-3.5 py-1.5 rounded-full border-2 font-black uppercase text-[11px] sm:text-xs tracking-wide transition-colors duration-200",
                   on ? "border-white bg-white text-galos-red" : "border-white/40 text-white/75"

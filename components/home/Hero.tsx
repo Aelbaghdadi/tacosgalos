@@ -18,6 +18,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useLocationStore } from "@/store/locationStore";
 import { useUIStore } from "@/store/uiStore";
 import { STORES } from "@/data/stores";
+import { ENTRADA, MICRO, AMBIENTE } from "@/components/motion/patrones";
 import { cn } from "@/lib/utils";
 
 /**
@@ -28,7 +29,7 @@ import { cn } from "@/lib/utils";
  * y la cadena entera acaba en menos de 0,9 s. Nada de entradas de tres
  * segundos.
  */
-const MUELLE = { type: "spring" as const, stiffness: 460, damping: 30, mass: 0.7 };
+const MUELLE = ENTRADA;
 
 const CONTENEDOR = {
   oculto: {},
@@ -45,7 +46,7 @@ const PEGATINA = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { type: "spring" as const, stiffness: 420, damping: 18 },
+    transition: ENTRADA,
   },
 };
 const QUIETO = { oculto: { opacity: 1 }, visible: { opacity: 1 } };
@@ -86,7 +87,11 @@ type Pieza = {
 const PIEZAS: Pieza[] = [
   {
     id: "queso",
-    pos: "right-[-22%] top-[31%] w-[30%] sm:right-[-8%] sm:top-[-6%] sm:w-[26%]",
+    /* En movil solo asoman queso y patatas, y asoman DE VERDAD: antes
+       eran astillas de 38 px que se leian como un recorte accidental. La
+       pieza es mas grande y entra por el hueco que queda entre el marcador
+       y el titular, a la derecha. */
+    pos: "right-[-25%] top-[26%] w-[41%] sm:right-[-8%] sm:top-[-6%] sm:w-[26%]",
     dur: 7.4,
     amp: 8,
     giro: -8,
@@ -112,7 +117,12 @@ const PIEZAS: Pieza[] = [
   {
     id: "patatas",
     /* La que se queda atrás al salir: baja mientras el resto sube. */
-    pos: "left-[-16%] bottom-[-7%] w-[32%] sm:left-[6%] sm:bottom-[-22%] sm:w-[19%]",
+    /* En movil las patatas entran por el borde INFERIOR, no por el
+       lateral: a 430 px los badges arrancan en x=29 y no queda margen
+       izquierdo. Debajo de ellos si hay banda libre, y el desplazamiento va
+       en pixeles porque el alto del hero cambia con el envolvido del texto
+       —en porcentaje, lo que encaja a 400 se comia los badges a 430. */
+    pos: "left-[-10%] bottom-[-84px] w-[50%] sm:left-[6%] sm:bottom-[-22%] sm:w-[19%]",
     dur: 8.2,
     amp: 10,
     giro: 7,
@@ -216,6 +226,10 @@ function Recorte({
                 alt=""
                 draggable={false}
                 decoding="async"
+                /* Decoracion: nunca debe competir con la fuente ni con el
+                   titular. Medido que no perjudica al LCP — el recorte que
+                   Lighthouse marca como LCP en movil tarda 0 ms en cargar; lo
+                   que retrasa el pintado son 4,1 s de hilo principal. */
                 fetchPriority="low"
                 className="block w-full h-auto select-none"
                 style={{
@@ -271,7 +285,7 @@ export function Hero() {
   */
   const punteroX = useMotionValue(0);
   const punteroY = useMotionValue(0);
-  const muelleRaton = { stiffness: 46, damping: 18, mass: 0.7 };
+  const muelleRaton = AMBIENTE;
   const raton = {
     x: useSpring(punteroX, muelleRaton),
     y: useSpring(punteroY, muelleRaton),
@@ -344,7 +358,7 @@ export function Hero() {
     <section
       ref={ref}
       id="inicio"
-      className="relative bg-galos-red text-white overflow-hidden pt-[80px] md:pt-[132px] pb-14 lg:pb-20"
+      className="relative bg-galos-red text-white overflow-hidden pt-[80px] md:pt-[132px] pb-24 sm:pb-14 lg:pb-20"
     >
       {/* ── FONDO ────────────────────────────────────────────────────────
           Todo CSS, cero bytes de imagen. El orden importa: trama, resplandor
@@ -451,7 +465,7 @@ export function Hero() {
           </h1>
 
           <motion.p
-            className="mt-4 text-base sm:text-lg max-w-xl text-red-100 leading-relaxed"
+            className="mt-4 text-base sm:text-lg max-w-xl text-white leading-relaxed"
             variants={quieto ? QUIETO : PIEZA}
             style={quieto ? undefined : { y: yTexto }}
           >
@@ -499,7 +513,9 @@ export function Hero() {
 
             <button
               onClick={openLocator}
-              aria-label={store ? `Cambiar local. Actual: ${store.city}` : "Elegir local"}
+              /* Sin `aria-label`: el texto visible ("Pidiendo en Mataró ·
+                 Cambiar") ya es mejor nombre que cualquiera que inventemos, y
+                 uno distinto rompe la correspondencia que pide la WCAG 2.5.3. */
               className="group inline-flex items-stretch overflow-hidden
                          bg-black/30 hover:bg-black/40
                          border-2 border-white/25 hover:border-white/50
@@ -604,7 +620,7 @@ export function Hero() {
 function Iman({ children, quieto }: { children: React.ReactNode; quieto: boolean }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const muelle = { stiffness: 260, damping: 22, mass: 0.5 };
+  const muelle = MICRO;
   const sx = useSpring(x, muelle);
   const sy = useSpring(y, muelle);
   const TOPE = 4;
@@ -628,7 +644,7 @@ function Iman({ children, quieto }: { children: React.ReactNode; quieto: boolean
         className="w-full sm:w-auto"
         style={quieto ? undefined : { x: sx, y: sy }}
         whileTap={quieto ? undefined : { scale: 0.97 }}
-        transition={{ type: "spring", stiffness: 420, damping: 24 }}
+        transition={MICRO}
       >
         {children}
       </motion.div>
@@ -677,7 +693,7 @@ function PegatinaFlotante({
       style={quieto ? undefined : { x: ratonX, y: total }}
       initial={quieto ? false : { opacity: 0, scale: 0.6 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: "spring", stiffness: 420, damping: 18, delay: retraso }}
+      transition={{ ...ENTRADA, delay: retraso }}
     >
       <motion.div
         className="will-change-transform"

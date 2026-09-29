@@ -88,9 +88,17 @@ export function HowItWorks() {
 
   return (
     <section className="relative bg-white">
-      {/* La altura extra es el recorrido de scroll que se traduce en avance
-          horizontal. Cinco pasos ≈ dos pantallas y media de bajada. */}
-      <div ref={ref} className={cn("relative", !quieto && "lg:h-[250vh]")}>
+      {/*
+        La altura extra es el recorrido de scroll que se traduce en avance
+        horizontal, y va en PIXELES, no en `vh`.
+
+        Con `250vh` la duración dependía del alto de la ventana: en un portátil
+        de 768 px había que bajar 1,14 px por cada píxel que avanzaba la fila, y
+        en un monitor de 1200 px, 1,83 — un 60 % más lenta la misma sección, que
+        en pantalla grande se siente pesada. Con un extra fijo, la fila avanza
+        al mismo ritmo en cualquier pantalla.
+      */}
+      <div ref={ref} className={cn("relative", !quieto && "lg:h-[calc(100vh+1100px)]")}>
         <div
           className={cn(
             "py-20 lg:pb-32",

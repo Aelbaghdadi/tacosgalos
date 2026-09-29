@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { useCartCount } from "@/store/cartStore";
 import { useUIStore } from "@/store/uiStore";
 import { NAV_ITEMS } from "@/data/navigation";
+import { MICRO, REBOTE, SUAVE } from "@/components/motion/patrones";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,7 +35,29 @@ export function Header() {
   useMotionValueEvent(scrollY, "change", (y) => {
     const nuevo = y > 28;
     setCompacto((prev) => (prev === nuevo ? prev : nuevo));
+    /* El menu vive dentro del header fijo, asi que al bajar te seguia por la
+       pagina tapando contenido. Si te pones a hacer scroll es que ya no lo
+       quieres: se cierra solo. */
+    if (navOpen && Math.abs(y - abrioEn.current) > 40) setNavOpen(false);
   });
+
+  /* Desde donde se abrio el menu, para no cerrarlo por el rebote del propio
+     clic sino solo cuando el usuario se mueve de verdad. */
+  const abrioEn = useRef(0);
+  const alternarMenu = () => {
+    abrioEn.current = scrollY.get();
+    setNavOpen((v) => !v);
+  };
+
+  /* Escape cierra, que es lo que espera cualquiera que use teclado. */
+  useEffect(() => {
+    if (!navOpen) return;
+    const alPulsar = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setNavOpen(false);
+    };
+    window.addEventListener("keydown", alPulsar);
+    return () => window.removeEventListener("keydown", alPulsar);
+  }, [navOpen]);
 
   return (
     <motion.header
@@ -52,7 +75,7 @@ export function Header() {
               boxShadow: compacto ? "0 3px 0 rgba(15,15,15,1)" : "0 0 0 rgba(15,15,15,0)",
             }
       }
-      transition={{ duration: 0.28, ease: [0.22, 0.8, 0.3, 1] }}
+      transition={{ ...SUAVE, duration: 0.28 }}
       className="fixed top-0 md:top-[44px] inset-x-0 z-[100] h-[64px] md:h-[76px] backdrop-blur"
     >
       <div className="container mx-auto px-3 md:px-4 h-full flex items-center justify-between gap-2 md:gap-4">
@@ -61,7 +84,7 @@ export function Header() {
           <motion.span
             className="block origin-left will-change-transform"
             animate={quieto ? undefined : { scale: compacto ? 0.86 : 1 }}
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            transition={MICRO}
           >
           <Image
             src="/images/logo.jpg"
@@ -90,6 +113,7 @@ export function Header() {
 
         {/* DESKTOP NAV */}
         <nav
+          id="nav-principal"
           className={cn(
             "md:flex md:items-center md:gap-6",
             navOpen
@@ -127,7 +151,9 @@ export function Header() {
           */}
           <button
             onClick={openCart}
-            aria-label={`Ver carrito${count > 0 ? ` (${count})` : ""}`}
+            /* El nombre accesible tiene que CONTENER el texto visible
+               ("Mi pedido"), o quien dicta por voz no puede invocarlo. */
+            aria-label={`Mi pedido${count > 0 ? `, ${count} artículos` : ", vacío"}`}
             className="group relative inline-flex items-center justify-center
                        w-10 h-10 text-galos-black hover:text-galos-red transition-colors
                        md:w-auto md:h-auto md:gap-2 md:pl-3 md:pr-4 md:py-2 md:rounded-full
@@ -144,7 +170,7 @@ export function Header() {
                 key={count}
                 initial={quieto ? false : { scale: 0.4 }}
                 animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 620, damping: 16 }}
+                transition={REBOTE}
                 className="absolute top-0.5 right-0.5 md:static md:ml-1
                            bg-galos-red md:bg-galos-red text-white
                            min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center
@@ -166,9 +192,10 @@ export function Header() {
             Hereda color → consistente con el carrito.
           */}
           <button
-            onClick={() => setNavOpen((v) => !v)}
+            onClick={alternarMenu}
             aria-label={navOpen ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={navOpen}
+            aria-controls="nav-principal"
             className="md:hidden inline-flex flex-col items-center justify-center gap-[5px]
                        w-10 h-10 text-galos-black hover:text-galos-red
                        transition-[color,transform] active:scale-90"
