@@ -1,49 +1,40 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  useMotionValueEvent,
+  useReducedMotion,
+  type MotionValue,
+} from "motion/react";
 import { OPTION_GROUPS } from "@/data/options";
 import { formatPrice, cn } from "@/lib/utils";
 
 /**
- * MONTA TU GALOS — sección fija con el scroll como línea de tiempo.
+ * MONTA TU GALOS — el taco se construye de verdad.
  *
- * No es una animación de entrada. La sección se queda clavada y el scroll
- * AVANZA DENTRO de ella: el taco crece, entran los ingredientes y el precio
- * sube. Subes la rueda y va hacia atrás. El usuario controla la reproducción.
+ * El scroll es la línea de tiempo: la sección se queda clavada y los
+ * ingredientes CAEN sobre la tortilla uno a uno, con rebote, giro y sombra
+ * que crece al aterrizar. Subes la rueda y vuelven a salir volando.
  *
- * Sin librerías: contenedor alto + sticky + listener limitado por rAF.
+ * Antes esto fundía cuatro composiciones ya montadas; ahora la tortilla es la
+ * base y pollo, patatas, queso y salsa son capas sueltas con alfa que se
+ * animan por separado. Por eso se lee como una construcción y no como un
+ * pase de diapositivas.
  *
- * Nombres y recargos salen de data/options.ts, así que el precio que se ve
- * subir no es decorativo.
+ * RENDIMIENTO: cada capa se mueve con MotionValues encadenados a
+ * `useScroll`, así que el movimiento no pasa por React — cero renders por
+ * fotograma, solo transform y opacity. El estado de React (etapa, precio,
+ * chips) se actualiza únicamente cuando cambia de verdad, no 60 veces por
+ * segundo.
  */
 
 const { size, meat, cheese, sauces } = OPTION_GROUPS;
 
 /** Precio del Tacos M, verificado contra las cartas de Glovo. */
 const BASE = 9.9;
-
-/**
- * Los 4 estados del taco.
- *
- * Cada uno es una imagen COMPLETA con alfa, no una capa suelta de ingrediente:
- * así el cross-fade disimula los pocos píxeles de desalineo que siempre quedan
- * entre generaciones, cosa que un apilado de capas no perdonaría.
- *
- * Se generan encadenando 3 ediciones sobre el estado 0 — ver
- * docs/prompts-taco-secuencia.md. Mientras los archivos no existan se dibuja
- * el taco vectorial de más abajo y la web sigue funcionando igual.
- */
-/**
- * El ?v= no es decorativo: public/.htaccess sirve los .webp con
- * `max-age=31536000, immutable`, así que sin cambiar la URL un iPhone que ya
- * haya visto la demo seguiría con los assets viejos. Súbelo al regenerarlos.
- */
-const ESTADOS = [
-  { src: "/taco/estado-0-base.webp?v=1" },
-  { src: "/taco/estado-1-carne.webp?v=1" },
-  { src: "/taco/estado-2-queso.webp?v=1" },
-  { src: "/taco/estado-3-salsa.webp?v=1" },
-] as const;
 
 const ETAPAS = [
   { id: "size", titulo: "EL TAMAÑO", grupo: size },
@@ -52,74 +43,111 @@ const ETAPAS = [
   { id: "sauces", titulo: "LAS SALSAS", grupo: sauces },
 ] as const;
 
+/**
+ * Las capas que caen, en orden. Cada una tiene su ventana dentro del
+ * progreso total (0..1) y su desvío lateral, para que no aterricen todas en
+ * el mismo punto y el montón parezca real.
+ */
+const CAPAS = [
+  { src: "/ingredientes/pollo.webp", desde: 0.26, hasta: 0.46, x: "-4%", y: "4%", ancho: "62%", giro: -9 },
+  { src: "/ingredientes/patatas.webp", desde: 0.34, hasta: 0.54, x: "7%", y: "9%", ancho: "58%", giro: 7 },
+  { src: "/ingredientes/queso.webp", desde: 0.52, hasta: 0.72, x: "-1%", y: "1%", ancho: "60%", giro: -5 },
+  { src: "/ingredientes/algerienne.webp", desde: 0.76, hasta: 0.95, x: "2%", y: "-2%", ancho: "44%", giro: 10 },
+] as const;
+
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+/** Una capa de ingrediente cayendo. Todo su movimiento vive fuera de React. */
+function Capa({
+  capa,
+  progreso,
+  quieto,
+}: {
+  capa: (typeof CAPAS)[number];
+  progreso: MotionValue<number>;
+  quieto: boolean;
+}) {
+  const { desde, hasta } = capa;
+  const t = (f: number) => desde + (hasta - desde) * f;
+
+  /*
+    El aterrizaje: cae desde arriba, se pasa de frenada, rebota y se asienta.
+    Ese "pasarse y volver" es lo que separa una caída física de un deslizamiento.
+  */
+  const y = useTransform(progreso, [desde, t(0.62), t(0.8), hasta], ["-150%", "6%", "-2%", "0%"]);
+  const giro = useTransform(progreso, [desde, t(0.62), hasta], [capa.giro * 2.4, capa.giro * -0.3, 0]);
+  const escala = useTransform(progreso, [desde, t(0.62), t(0.82), hasta], [1.1, 0.97, 1.02, 1]);
+  const opacidad = useTransform(progreso, [desde, t(0.22), hasta], [0, 1, 1]);
+  /* La sombra se abre cuando el ingrediente toca: da el golpe. */
+  const sombraEsc = useTransform(progreso, [desde, t(0.6), t(0.78), hasta], [0.5, 1.12, 0.94, 1]);
+  const sombraOp = useTransform(progreso, [desde, t(0.55), hasta], [0, 0.42, 0.34]);
+
+  if (quieto) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={capa.src}
+        alt=""
+        aria-hidden
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none"
+        style={{ width: capa.ancho, marginLeft: capa.x, marginTop: capa.y }}
+      />
+    );
+  }
+
+  return (
+    /*
+      El centrado va en el ENVOLTORIO y el movimiento en la imagen. Si se
+      mezclan, `translateY: "-50%"` y el `y` animado son el mismo componente
+      de transform: gana el estatico y se pierden caida, giro y escala.
+    */
+    <div
+      aria-hidden
+      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      style={{ width: capa.ancho, marginLeft: capa.x, marginTop: capa.y }}
+    >
+      <motion.div
+        className="absolute left-1/2 -translate-x-1/2 top-[62%] w-[86%] rounded-[50%] bg-black blur-md"
+        style={{ height: "18%", scale: sombraEsc, opacity: sombraOp }}
+      />
+      <motion.img
+        src={capa.src}
+        alt=""
+        draggable={false}
+        className="relative block w-full select-none will-change-transform"
+        style={{ y, rotate: giro, scale: escala, opacity: opacidad }}
+      />
+    </div>
+  );
+}
 
 export function TacoBuilder() {
   const ref = useRef<HTMLElement>(null);
-  const escenario = useRef<HTMLDivElement>(null);
-  const [progreso, setProgreso] = useState(0);
-  const [quieto, setQuieto] = useState(false);
-  const [fotos, setFotos] = useState<"cargando" | "listas" | "fallan">("cargando");
+  const quieto = !!useReducedMotion();
 
-  /**
-   * Precarga en baja prioridad: son 4 archivos de <60 KB y la sección está muy
-   * por debajo del fold, así que no deben competir con el vídeo del hero.
-   * decode() es lo que evita el parpadeo en el primer scrub — el atributo
-   * decoding="async" no hace nada aquí.
-   */
+  /*
+    El progreso se mide EN VIVO con getBoundingClientRect, no con useScroll.
+    useScroll mide la seccion al montar, y en esta pagina las imagenes de
+    arriba cargan despues y la desplazan: el progreso se quedaba desfasado
+    y los ingredientes caian fuera de su etapa.
+    Se escribe en un MotionValue, asi que sigue sin haber un render por
+    fotograma: solo transform y opacity.
+  */
+  const scrollYProgress = useMotionValue(0);
   useEffect(() => {
-    let vivo = true;
-    Promise.all(
-      ESTADOS.map((e) => {
-        const img = new Image();
-        (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "low";
-        img.src = e.src;
-        return img.decode();
-      })
-    )
-      .then(() => {
-        if (vivo) setFotos("listas");
-      })
-      .catch(() => {
-        if (vivo) setFotos("fallan");
-      });
-    return () => {
-      vivo = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      setQuieto(true);
-      setProgreso(1);
-      return;
-    }
-
+    if (quieto) return;
     let pendiente = 0;
     const medir = () => {
       pendiente = 0;
       const nodo = ref.current;
       if (!nodo) return;
       const r = nodo.getBoundingClientRect();
-      /**
-       * Medimos el escenario en vez de usar window.innerHeight. El carril mide
-       * 340vh (viewport grande, barra plegada) y el escenario 100svh, pero
-       * innerHeight es el viewport dinámico: en iOS cambia al plegarse la barra
-       * de Safari y el denominador saltaba justo al empezar a scrollear.
-       */
-      const alto = escenario.current?.offsetHeight ?? window.innerHeight;
-      const recorrido = r.height - alto;
-      if (recorrido <= 0) {
-        setProgreso(1);
-        return;
-      }
-      setProgreso(clamp(-r.top / recorrido, 0, 1));
+      const recorrido = r.height - window.innerHeight;
+      scrollYProgress.set(recorrido <= 0 ? 1 : clamp(-r.top / recorrido, 0, 1));
     };
     const alScroll = () => {
-      if (pendiente) return;
-      pendiente = requestAnimationFrame(medir);
+      if (!pendiente) pendiente = requestAnimationFrame(medir);
     };
-
     medir();
     window.addEventListener("scroll", alScroll, { passive: true });
     window.addEventListener("resize", alScroll);
@@ -128,81 +156,68 @@ export function TacoBuilder() {
       window.removeEventListener("scroll", alScroll);
       window.removeEventListener("resize", alScroll);
     };
-  }, []);
+  }, [scrollYProgress, quieto]);
 
-  const bruto = progreso * ETAPAS.length;
-  const etapaIdx = clamp(Math.floor(bruto), 0, ETAPAS.length - 1);
-  const dentro = quieto ? 1 : clamp(bruto - etapaIdx, 0, 1);
+  /* La tortilla crece de M a XXL durante la primera etapa. */
+  const escalaTortilla = useTransform(scrollYProgress, [0, 0.25], [0.58, 1]);
+
+  /*
+    Lo único que necesita React: etapa, índices de opción y precio. Se
+    recalculan solo cuando CAMBIAN, no en cada fotograma.
+  */
+  const [v, setV] = useState({ etapa: 0, tam: 0, carne: 0, queso: 0, salsas: 0, p: 0 });
+
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    const bruto = p * ETAPAS.length;
+    const etapa = clamp(Math.floor(bruto), 0, ETAPAS.length - 1);
+    const dentro = clamp(bruto - etapa, 0, 1);
+    const escan = (n: number, propia: number) =>
+      etapa < propia ? 0 : etapa > propia ? n - 1 : clamp(Math.floor(dentro * n), 0, n - 1);
+    const next = {
+      etapa,
+      tam: escan(size.values.length, 0),
+      carne: escan(meat.values.length, 1),
+      queso: escan(cheese.values.length, 2),
+      salsas: clamp(Math.ceil(dentro * (sauces.max ?? 3)), 0, sauces.max ?? 3),
+      p: Math.round(p * 100),
+    };
+    setV((prev) =>
+      prev.etapa === next.etapa &&
+      prev.tam === next.tam &&
+      prev.carne === next.carne &&
+      prev.queso === next.queso &&
+      prev.salsas === next.salsas &&
+      prev.p === next.p
+        ? prev
+        : next
+    );
+  });
+
+  const etapaIdx = quieto ? ETAPAS.length - 1 : v.etapa;
   const etapa = ETAPAS[etapaIdx];
-
-  /**
-   * Índice que "escanea" un grupo de selección única mientras dura su etapa.
-   * Antes se iban encendiendo TODOS los chips a la vez, y size/meat/cheese son
-   * `selection: "single"`: enseñar seis carnes marcadas a la vez contradice el
-   * propio modelo de datos. Ahora se enciende exactamente uno.
-   */
-  const escaneo = (n: number, etapaPropia: number) => {
-    if (quieto) return n - 1;
-    if (etapaIdx < etapaPropia) return 0;
-    if (etapaIdx > etapaPropia) return n - 1;
-    return clamp(Math.floor(dentro * n), 0, n - 1);
-  };
-
-  const tamIdx = escaneo(size.values.length, 0);
-  const carneIdx = escaneo(meat.values.length, 1);
-  const quesoIdx = escaneo(cheese.values.length, 2);
-
-  const elegidoTam = size.values[tamIdx];
-  const elegidaCarne = etapaIdx >= 1 ? meat.values[carneIdx] : null;
-  const elegidoQueso = etapaIdx >= 2 ? cheese.values[quesoIdx] : null;
-
-  /**
-   * Como el escaneo empieza siempre por la opción de +0,00 €, el precio ya no
-   * pega un salto seco al entrar en la etapa mientras el ingrediente todavía
-   * es invisible: sube a medida que el escaneo avanza y la capa se funde.
-   */
+  const elegidoTam = size.values[quieto ? size.values.length - 1 : v.tam];
+  const elegidaCarne = etapaIdx >= 1 ? meat.values[quieto ? meat.values.length - 1 : v.carne] : null;
+  const elegidoQueso = etapaIdx >= 2 ? cheese.values[quieto ? cheese.values.length - 1 : v.queso] : null;
   const precio =
     BASE + (elegidoTam?.delta ?? 0) + (elegidaCarne?.delta ?? 0) + (elegidoQueso?.delta ?? 0);
 
-  /** El tamaño M->XXL es escala CSS, no imágenes distintas. */
-  const escala = quieto ? 1 : 0.55 + clamp(bruto, 0, 1) * 0.45;
-
-  /** Las salsas sí son multi, pero con tope: data/options.ts dice max 3. */
-  const topeSalsas = sauces.max ?? sauces.values.length;
-  const salsasEntradas = quieto
-    ? topeSalsas
-    : clamp(Math.ceil(dentro * topeSalsas), 0, topeSalsas);
-
   const chipActivo = (i: number) => {
-    if (etapa.id === "sauces") return i < salsasEntradas;
-    if (etapa.id === "size") return i === tamIdx;
-    if (etapa.id === "meat") return i === carneIdx;
-    return i === quesoIdx;
-  };
-
-  /** El estado 0 siempre está; cada siguiente entra durante su propia etapa. */
-  const opacidadDe = (i: number) => {
-    if (i === 0) return 1;
-    return quieto ? 1 : clamp(bruto - i, 0, 1);
+    if (quieto) return i === etapa.grupo.values.length - 1;
+    if (etapa.id === "sauces") return i < v.salsas;
+    if (etapa.id === "size") return i === v.tam;
+    if (etapa.id === "meat") return i === v.carne;
+    return i === v.queso;
   };
 
   return (
-    /**
-     * Con prefers-reduced-motion no basta con congelar la animación: si el
-     * carril siguiera midiendo 340vh quedarían ~2,4 pantallas de scroll muerto
-     * con la imagen quieta. Ahí la sección pasa a ser una sección normal.
-     */
     <section
       ref={ref}
       id="crea"
       className={cn("relative bg-galos-red", quieto ? "py-20" : "h-[340vh]")}
     >
       <div
-        ref={escenario}
         className={cn(
           "overflow-hidden flex flex-col items-center justify-center px-4",
-          // El header es fixed (64px en móvil; 44+76=120 en escritorio). Sin
-          // reservarlo se comía el borde superior de la cabecera de etapa.
           "pt-[64px] md:pt-[120px] pb-6",
           quieto ? "min-h-[70svh]" : "sticky top-0 h-[100svh]"
         )}
@@ -232,29 +247,9 @@ export function TacoBuilder() {
           Monta tu Galos sin soltar la rueda
         </p>
 
-        {/*
-          flex-1 en vez de una altura en svh: el taco se queda con el espacio
-          que sobre, sea cual sea el viewport. Calibrar un porcentaje de svh
-          era frágil (el svh real de Safari no es el alto de pantalla) y en
-          horizontal el overflow-hidden acababa recortando el precio.
-          El tope de 400px mantiene la caja dentro del max-w-xs: 400*0.8 = 320.
-        */}
         <div className="relative z-10 flex-1 min-h-0 flex items-center justify-center w-full max-w-sm py-2">
-          {/*
-            El badge de tamaño va DENTRO del contenedor escalado y se
-            contra-escala, para que siga pegado a la esquina del taco cuando es
-            pequeño en vez de quedarse flotando en el borde de la caja.
-
-            La sombra va AQUÍ y no en cada <img>: con una sombra por capa se
-            apilaban las cuatro y el negro pasaba de 45% a 91% según avanzaba
-            el scrub, además de cuatro desenfoques por fotograma.
-          */}
-          <div
+          <motion.div
             role="img"
-            /**
-             * La descripción va aquí y no en un alt por capa: antes el alt
-             * describía el taco COMPLETO mientras en pantalla había uno vacío.
-             */
             aria-label={
               "Tacos Galos " +
               (elegidoTam?.label ?? "") +
@@ -262,110 +257,59 @@ export function TacoBuilder() {
               (elegidoQueso ? ", " + elegidoQueso.label : "") +
               (etapaIdx >= 3 ? " y salsa" : "")
             }
-            /*
-              Cuadrado, no 4:5. La secuencia se monta sobre la tortilla
-              REDONDA abierta —que es como se hace de verdad un french tacos—,
-              y un círculo en un marco vertical deja dos franjas muertas.
-              El tope de 360px lo mantiene dentro del max-w-sm (384px).
-            */
-            className="relative h-full max-h-[360px] aspect-square"
-            style={{ transform: "scale(" + escala + ")" }}
+            className="relative h-full max-h-[360px] aspect-square will-change-transform"
+            style={quieto ? undefined : { scale: escalaTortilla }}
           >
-            {/*
-              La sombra envuelve SOLO las capas del taco. Si se pone en cada
-              <img> se apilan las cuatro (el negro sube de 45% a 91% durante el
-              scrub y son 4 desenfoques por fotograma); si se pone en el padre,
-              se la come también el badge, que ya tiene su shadow-hard-sm.
-            */}
-            <div className="absolute inset-0 drop-shadow-[0_18px_22px_rgba(0,0,0,.45)]">
-            {fotos === "listas" ? (
-              ESTADOS.map((e, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={e.src}
-                  src={e.src}
-                  alt=""
-                  aria-hidden
-                  draggable={false}
-                  /**
-                   * pointer-events-none + touch-callout: parar el scrub con el
-                   * dedo encima del taco es justo la interacción que pedimos, y
-                   * en iOS eso abre el menú "Guardar imagen".
-                   */
-                  className="absolute inset-0 h-full w-full object-contain select-none pointer-events-none [-webkit-touch-callout:none]"
-                  style={{ opacity: opacidadDe(i) }}
-                />
-              ))
-            ) : (
-              <svg
-                viewBox="0 0 120 190"
-                aria-hidden
-                className="absolute inset-0 h-full w-full"
-              >
-                <rect x="4" y="4" width="112" height="182" rx="14" fill="#F3D9A4" stroke="#0F0F0F" strokeWidth="5" />
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <path
-                    key={i}
-                    d={"M8 " + (34 + i * 32) + " L112 " + (14 + i * 32)}
-                    stroke="#C99A0A"
-                    strokeWidth="3"
-                    opacity={0.55}
-                  />
-                ))}
-                {etapaIdx >= 1 && (
-                  <rect x="18" y="118" width="84" height="26" rx="8" fill="#8B3A14" opacity={etapaIdx === 1 ? dentro : 1} />
-                )}
-                {etapaIdx >= 2 && (
-                  <rect x="18" y="92" width="84" height="22" rx="8" fill="#F5C518" opacity={etapaIdx === 2 ? dentro : 1} />
-                )}
-                {etapaIdx >= 3 && (
-                  <rect x="18" y="70" width="84" height="18" rx="7" fill="#E30613" opacity={dentro} />
-                )}
-              </svg>
-            )}
-            </div>
-
-            {/*
-              Contra-escala CAPADA a 1,25. Con 1/escala pura, al principio el
-              badge se ampliaba 1,82x sobre un taco al 55% y se comía media
-              imagen; capándola encoge con el taco pero sigue legible.
-            */}
-            <span
+            {/* Sombra de la tortilla sobre el fondo */}
+            <div
               aria-hidden
-              className="absolute -top-2 -right-2 bg-galos-gold text-galos-black font-anton text-xl sm:text-2xl px-3 py-1 rounded-full border-[3px] border-galos-black shadow-hard-sm select-none"
-              style={{
-                transform: "scale(" + Math.min(1 / escala, 1.25) + ")",
-                transformOrigin: "top right",
-              }}
-            >
-              {elegidoTam?.label}
-            </span>
-          </div>
+              className="absolute left-1/2 bottom-[4%] h-[9%] w-[74%] -translate-x-1/2 rounded-[50%] bg-black/45 blur-lg"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/taco/estado-0-base.webp"
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="absolute inset-0 h-full w-full select-none object-contain drop-shadow-[0_18px_22px_rgba(0,0,0,.45)]"
+            />
+            {CAPAS.map((c) => (
+              <Capa key={c.src} capa={c} progreso={scrollYProgress} quieto={quieto} />
+            ))}
+          </motion.div>
+
+          <motion.span
+            aria-hidden
+            key={elegidoTam?.id}
+            initial={quieto ? false : { scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 500, damping: 22 }}
+            className="absolute right-2 top-2 bg-galos-gold text-galos-black font-anton text-xl sm:text-2xl px-3 py-1 rounded-full border-[3px] border-galos-black shadow-hard-sm select-none"
+          >
+            {elegidoTam?.label}
+          </motion.span>
         </div>
 
-        {/*
-          Altura FIJA, no min-h: las salsas son 7 chips y ocupan una fila más
-          que el resto, así que al cambiar de etapa la lista crecía y empujaba
-          al taco y al título arriba y abajo. content-start evita que las filas
-          se recoloquen al centro cuando sobra sitio.
-        */}
         <ul className="relative z-10 mt-4 flex flex-wrap content-start items-start justify-center gap-2 max-w-xl h-[76px] sm:h-[72px] overflow-hidden">
-          {etapa.grupo.values.map((v, i) => (
-            <li
-              key={v.id}
-              className={cn(
-                "px-3.5 py-1.5 rounded-full border-2 font-black uppercase text-[11px] sm:text-xs tracking-wide transition-all duration-200",
-                chipActivo(i)
-                  ? "border-white bg-white text-galos-red"
-                  : // Antes white/40 sobre rojo: ~1,2:1 de contraste, o sea
-                    // ilegible en vez de atenuado.
-                    "border-white/40 text-white/75"
-              )}
-            >
-              {v.label}
-              {v.delta > 0 && <span className="ml-1.5 opacity-70">+{formatPrice(v.delta)}</span>}
-            </li>
-          ))}
+          {etapa.grupo.values.map((val, i) => {
+            const on = chipActivo(i);
+            return (
+              <motion.li
+                key={val.id}
+                animate={quieto ? undefined : { scale: on ? 1.06 : 1 }}
+                transition={{ type: "spring", stiffness: 480, damping: 26 }}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full border-2 font-black uppercase text-[11px] sm:text-xs tracking-wide transition-colors duration-200",
+                  on ? "border-white bg-white text-galos-red" : "border-white/40 text-white/75"
+                )}
+              >
+                {val.label}
+                {val.delta > 0 && (
+                  <span className="ml-1.5 opacity-70">+{formatPrice(val.delta)}</span>
+                )}
+              </motion.li>
+            );
+          })}
         </ul>
 
         <div className="relative z-10 mt-5 flex items-baseline gap-2">
@@ -377,13 +321,15 @@ export function TacoBuilder() {
           </span>
         </div>
 
-        {/* Sin scrub que medir, una barra clavada al 100% solo confunde. */}
         {!quieto && (
           <div
             aria-hidden
             className="relative z-10 mt-5 w-40 h-1.5 rounded-full bg-white/20 overflow-hidden shrink-0"
           >
-            <div className="h-full bg-galos-gold" style={{ width: progreso * 100 + "%" }} />
+            <motion.div
+              className="h-full bg-galos-gold origin-left"
+              style={{ scaleX: scrollYProgress }}
+            />
           </div>
         )}
       </div>

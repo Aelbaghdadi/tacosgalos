@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Escalonado, Hijo, Revela } from "@/components/motion/patrones";
 import { Card } from "@/components/ui/Card";
 import { StickerTitle, Hl } from "@/components/ui/StickerTitle";
 import {
@@ -52,17 +53,19 @@ export function DirectOrderSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <Escalonado className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" paso={0.08}>
           {PERKS.map((p) => (
-            <Card key={p.title} className="p-7">
+            <Hijo key={p.title} patron="escala">
+            <Card className="p-7 h-full">
               <div className="w-16 h-16 rounded-full bg-galos-red text-white border-[3px] border-galos-black flex items-center justify-center">
                 <p.Icono className="w-8 h-8" />
               </div>
               <h3 className="font-anton text-2xl uppercase tracking-wide mt-4 mb-2">{p.title}</h3>
               <p className="text-neutral-700 font-semibold text-sm">{p.desc}</p>
             </Card>
+            </Hijo>
           ))}
-        </div>
+        </Escalonado>
       </div>
     </section>
   );

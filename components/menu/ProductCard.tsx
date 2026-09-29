@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion, useReducedMotion } from "motion/react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -36,9 +37,21 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   const promo = promoDe(product.id);
+  const quieto = !!useReducedMotion();
 
   return (
-    <Card className="flex flex-col relative overflow-hidden">
+    /*
+      Elevacion con muelle en Motion; el producto de dentro se acerca con una
+      simple transicion CSS via group-hover. No hace falta orquestar dos
+      animaciones para un hover.
+    */
+    <motion.div
+      className="group h-full"
+      whileHover={quieto ? undefined : { y: -6 }}
+      whileTap={quieto ? undefined : { scale: 0.985 }}
+      transition={{ type: "spring", stiffness: 420, damping: 30 }}
+    >
+    <Card className="flex flex-col relative overflow-hidden h-full transition-shadow duration-300 group-hover:shadow-hard-lg">
       {/* Imagen del producto con badges flotantes */}
       <div className="relative aspect-[4/3] w-full bg-galos-cream border-b-[3px] border-galos-black">
         {promo ? (
@@ -51,7 +64,7 @@ export function ProductCard({ product }: { product: Product }) {
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-[450ms] ease-out group-hover:scale-[1.05]"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-6xl">🌮</div>
@@ -107,5 +120,6 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
     </Card>
+    </motion.div>
   );
 }

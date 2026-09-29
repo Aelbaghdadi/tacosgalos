@@ -26,7 +26,9 @@ export function FranjaApertura({
 
   return (
     <>
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
+      {/* Sin margen ni fila propia: ahora vive dentro de la segunda
+          línea del marcador, en pequeño y junto al objetivo del reto. */}
+      <div className="inline-flex flex-wrap items-center gap-2">
         {/*
           ⚠️ La píldora de apertura depende de que haya una pendiente, pero
           "¿Tienes un local?" NO: se muestra siempre. Si se atan las dos, en
@@ -41,12 +43,12 @@ export function FranjaApertura({
                      bg-galos-black border-2 border-galos-gold/50 hover:border-galos-gold
                      transition-colors text-left"
         >
-          <span className="inline-flex items-center gap-2 pl-3.5 pr-3 py-2">
-            <span className="w-2 h-2 rounded-full bg-galos-gold animate-pulse-scale flex-shrink-0" />
-            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-white">
+          <span className="inline-flex items-center gap-1.5 pl-3 pr-2.5 py-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-galos-gold animate-pulse-scale flex-shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-white">
               Apertura {ciudad}
             </span>
-            <span className="text-[11px] sm:text-xs font-bold text-galos-gold tabular-nums">
+            <span className="text-[10px] sm:text-[11px] font-bold text-galos-gold tabular-nums">
               {faltan == null
                 ? "Muy pronto"
                 : faltan === 0
@@ -55,9 +57,9 @@ export function FranjaApertura({
             </span>
           </span>
           <span
-            className="inline-flex items-center px-3.5 py-2 border-l-2 border-galos-gold/40
+            className="inline-flex items-center px-3 py-1.5 border-l-2 border-galos-gold/40
                        bg-galos-gold text-galos-black font-black uppercase
-                       tracking-wider text-[11px] group-hover:bg-white transition-colors"
+                       tracking-wider text-[10px] group-hover:bg-white transition-colors"
           >
             Avísame
           </span>
@@ -66,9 +68,9 @@ export function FranjaApertura({
 
         <button
           onClick={() => setModo("local")}
-          className="text-[11px] sm:text-xs font-black uppercase tracking-wider
-                     text-white/70 hover:text-white underline underline-offset-4
-                     decoration-white/30 hover:decoration-white transition-colors px-1 py-2"
+          className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider
+                     text-white/60 hover:text-white underline underline-offset-4
+                     decoration-white/30 hover:decoration-white transition-colors py-1"
         >
           ¿Tienes un local?
         </button>

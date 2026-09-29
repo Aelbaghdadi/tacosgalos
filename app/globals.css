@@ -128,6 +128,51 @@
   }
 }
 
+/* ── Golpe tipográfico del titular del hero ────────────────────────
+   Dos animaciones sobre dos nodos: la de fuera abre un `clip-path` de abajo
+   arriba, la de dentro sube el texto y lo endereza. Esa diferencia es lo que
+   hace que las letras parezcan salir DE detrás del borde en vez de aparecer y
+   ya. El easing del texto pasa de 1 a propósito: rebasa un par de píxeles y
+   vuelve, y ahí está el golpe.
+
+   Va en CSS y no en Motion por un motivo concreto: el <h1> es el elemento LCP.
+   En CSS la entrada arranca con el primer pintado, sin esperar a que hidrate
+   React, y si el JS se cae el titular se ve igual. La regla entera vive dentro
+   del @media, así que con movimiento reducido no hay ni recorte ni animación:
+   el titular está y punto.
+
+   El inset final es negativo porque `.tg-sticker` proyecta una sombra de 22 px
+   más 30 de desenfoque: con el recorte a cero, la máscara le cortaría la
+   sombra al titular. */
+@keyframes tgGolpeMascara {
+  from {
+    clip-path: inset(100% 0% 0% 0%);
+  }
+  to {
+    clip-path: inset(-32% -14% -85% -14%);
+  }
+}
+
+@keyframes tgGolpeTexto {
+  from {
+    transform: translate3d(var(--tg-dx, 0px), 42%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tg-golpe {
+    animation: tgGolpeMascara 0.58s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: var(--tg-d, 0s);
+  }
+  .tg-golpe > * {
+    animation: tgGolpeTexto 0.66s cubic-bezier(0.22, 1.5, 0.36, 1) backwards;
+    animation-delay: var(--tg-d, 0s);
+  }
+}
+
 /* La animación del reveal vive SOLO aquí dentro. Ver la nota en .tg-sube. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {

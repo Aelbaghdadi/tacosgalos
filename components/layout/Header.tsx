@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { motion, useMotionValueEvent, useScroll, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { useCartCount } from "@/store/cartStore";
 import { useUIStore } from "@/store/uiStore";
@@ -21,12 +22,47 @@ export function Header() {
   const count = useCartCount();
   const openCart = useUIStore((s) => s.openCart);
   const [navOpen, setNavOpen] = useState(false);
+  const quieto = !!useReducedMotion();
+
+  /*
+    Arriba del todo el header va suelto y traslucido; en cuanto se baja se
+    compacta, el fondo se vuelve mas solido y el borde inferior aparece. Un
+    solo booleano, actualizado por umbral y no en cada fotograma.
+  */
+  const [compacto, setCompacto] = useState(false);
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (y) => {
+    const nuevo = y > 28;
+    setCompacto((prev) => (prev === nuevo ? prev : nuevo));
+  });
 
   return (
-    <header className="fixed top-0 md:top-[44px] inset-x-0 z-[100] h-[64px] md:h-[76px] bg-white/95 backdrop-blur border-b-[3px] border-galos-black">
+    <motion.header
+      /*
+        La ALTURA NO se anima: la reserva de 64px del TacoBuilder depende de
+        ella, y animar height provoca recalculo de layout en cada fotograma.
+        Lo que cambia es el fondo, la sombra y el borde — pintura barata — mas
+        una escala del logo, que es compositor puro.
+      */
+      animate={
+        quieto
+          ? undefined
+          : {
+              backgroundColor: compacto ? "rgba(255,248,240,0.97)" : "rgba(255,248,240,0.78)",
+              boxShadow: compacto ? "0 3px 0 rgba(15,15,15,1)" : "0 0 0 rgba(15,15,15,0)",
+            }
+      }
+      transition={{ duration: 0.28, ease: [0.22, 0.8, 0.3, 1] }}
+      className="fixed top-0 md:top-[44px] inset-x-0 z-[100] h-[64px] md:h-[76px] backdrop-blur"
+    >
       <div className="container mx-auto px-3 md:px-4 h-full flex items-center justify-between gap-2 md:gap-4">
         {/* LOGO */}
         <Link href="/" aria-label="Tacos Galos · Inicio" className="flex-shrink-0">
+          <motion.span
+            className="block origin-left will-change-transform"
+            animate={quieto ? undefined : { scale: compacto ? 0.86 : 1 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          >
           <Image
             src="/images/logo.jpg"
             alt="Tacos Galos"
@@ -35,6 +71,7 @@ export function Header() {
             className="w-10 h-10 md:w-14 md:h-14 rounded-full border-2 border-galos-black object-cover"
             priority
           />
+          </motion.span>
         </Link>
 
         {/* MOBILE CTA — protagonista, ocupa el espacio central */}
@@ -141,7 +178,7 @@ export function Header() {
           </button>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
