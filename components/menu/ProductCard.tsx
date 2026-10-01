@@ -14,6 +14,19 @@ import { useUIStore } from "@/store/uiStore";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product, ProductBadge } from "@/types";
 
+/**
+ * Funde la foto en el fondo por los dos lados. La foto es cuadrada y la caja
+ * es 4/3, así que sobra ancho, nunca alto: solo hace falta fundir en
+ * horizontal.
+ *
+ * El 6 % no es arbitrario. Con un 14 % se perdía el borde, sí, pero también
+ * las puntas de EL BBQ, que es casi tan ancho como su foto: el fundido le
+ * apagaba el producto. A 6 % el borde duro desaparece y el plato queda entero;
+ * lo que falta de transición lo pone la viñeta de encima.
+ */
+const FUNDIDO_LATERAL =
+  "linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%)";
+
 const BADGE_LABELS: Record<ProductBadge, { label: string; variant: "halal" | "new" | "top" | "spicy" | "promo" }> = {
   halal: { label: "Halal", variant: "halal" },
   new: { label: "Nuevo", variant: "new" },
@@ -41,8 +54,8 @@ export function ProductCard({ product }: { product: Product }) {
   const promo = promoDe(product.id);
   const quieto = !!useReducedMotion();
   /* Carbon o blanco, decidido por imagen. Ver data/fondos-producto.ts. */
-  const fondoFoto =
-    fondoDeFoto(product.imageUrl) === "claro" ? "bg-white" : "bg-[#1A1A1A]";
+  const oscura = fondoDeFoto(product.imageUrl) !== "claro";
+  const fondoFoto = oscura ? "bg-[#1A1A1A]" : "bg-white";
 
   return (
     /*
@@ -79,13 +92,57 @@ export function ProductCard({ product }: { product: Product }) {
             limpias. Lo que hay detras es un color plano elegido por categoria
             —ver FONDO_FOTO—, no una copia borrosa de la propia foto.
           */
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-contain transition-transform duration-[450ms] ease-out group-hover:scale-[1.04]"
-          />
+          <>
+            {/*
+              El mismo set que la plantilla Pizarra de las creatividades.
+
+              Al lado de las reconstruidas —set oscuro a sangre, con foco y
+              viñeta— la foto antigua se leía como un rectángulo pegado dentro
+              de una caja: su suelo de estudio terminaba en un borde duro
+              contra las bandas laterales. Dos cosas lo resuelven sin tocar el
+              producto:
+
+                · la foto se funde por los lados en el fondo (máscara), así que
+                  no hay borde que ver;
+                · encima van el MISMO foco cenital y la MISMA viñeta que la
+                  Pizarra, valores idénticos, para que todas parezcan
+                  iluminadas en el mismo sitio.
+
+              Solo en la familia oscura. Sobre blanco, una viñeta negra
+              ensuciaría bebidas y salsas, que ya funden de por sí.
+            */}
+            {oscura && (
+              <span
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(120% 70% at 50% -10%, rgba(255,255,255,.07), transparent 60%)",
+                }}
+              />
+            )}
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-contain transition-transform duration-[450ms] ease-out group-hover:scale-[1.04]"
+              style={{
+                WebkitMaskImage: FUNDIDO_LATERAL,
+                maskImage: FUNDIDO_LATERAL,
+              }}
+            />
+            {oscura && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(85% 70% at 50% 45%, transparent 40%, rgba(0,0,0,.72) 100%)",
+                }}
+              />
+            )}
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-6xl">🌮</div>
         )}

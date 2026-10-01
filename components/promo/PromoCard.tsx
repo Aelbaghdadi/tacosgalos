@@ -99,12 +99,17 @@ function Pizarra({ promo, titulo }: { promo: PromoProducto; titulo: string }) {
         decoding="async"
         draggable={false}
         /*
-          Caja de alto FIJO con object-contain, no ancho libre: los seis tacos
-          van de 800×366 a 800×476, así que dimensionar por ancho haría que el
+          Caja de alto FIJO con object-contain, no ancho libre: los nueve tacos
+          van de 800×348 a 800×571, así que dimensionar por ancho haría que el
           más alto invadiera el titular. Con alto fijo, el ancho se ajusta solo
           y la colisión es imposible sea cual sea la proporción.
+
+          El `w-[88%]` explícito no sobra: un <img> absoluto con ancho auto
+          toma el ancho de su proporción e IGNORA `right`, así que quedaba
+          pegado a la izquierda — hasta 65 px descentrado en los más altos.
+          Con la caja a lo ancho, object-contain lo centra.
         */
-        className="absolute inset-x-[6%] bottom-[6%] z-10 h-[53%] select-none object-contain object-bottom transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
+        className="absolute inset-x-[6%] w-[88%] bottom-[6%] z-10 h-[53%] select-none object-contain object-bottom transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
       />
 
       {/* Chapa de la mascota asomando por la esquina, como en el original */}
@@ -222,8 +227,9 @@ function Estallido({ promo, titulo }: { promo: PromoProducto; titulo: string }) 
         loading="lazy"
         decoding="async"
         draggable={false}
-        /* Mismo criterio que la pizarra: alto fijo, el ancho se ajusta solo. */
-        className="absolute inset-x-[12%] bottom-[1%] z-10 h-[59%] select-none object-contain object-bottom drop-shadow-[0_1cqi_1.2cqi_rgba(0,0,0,.3)] transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
+        /* Mismo criterio que la pizarra: alto fijo, el ancho se ajusta solo,
+           y ancho explícito (100% - 2×12%) para que se centre. */
+        className="absolute inset-x-[12%] w-[76%] bottom-[1%] z-10 h-[59%] select-none object-contain object-bottom drop-shadow-[0_1cqi_1.2cqi_rgba(0,0,0,.3)] transition-transform duration-[450ms] ease-out group-hover:-translate-y-[3%] group-hover:scale-[1.04]"
       />
     </>
   );

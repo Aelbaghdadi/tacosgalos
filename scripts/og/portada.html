@@ -1,0 +1,135 @@
+<!doctype html>
+<!--
+  PORTADA DE COMPARTICIÓN (Open Graph / X / WhatsApp) — fuente editable.
+
+  Se renderiza a 1200x630 y el resultado vive en public/og/tacos-galos.jpg.
+  Para regenerarla: abrir este archivo en Chrome a 1200x630 exactos y hacer
+  captura (DevTools → dispositivo personalizado 1200x630 → «Capturar pantalla»).
+
+  Por qué es HTML y no una imagen generada: el texto tiene que ser exacto y
+  legible en miniatura, y los modelos generativos deforman las letras — está
+  medido en este mismo proyecto. Aquí la tipografía es la de la web (Anton y
+  Figtree) y el producto es el real, el mismo taco que protagoniza el hero.
+
+  Pensada para leerse a 300 px de ancho, que es lo que ocupa en WhatsApp: por
+  eso el titular es enorme, blanco macizo y con poquísimas palabras.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@800;900&display=block" rel="stylesheet" />
+<style>
+  :root { --rojo: #E30613; --negro: #0F0F0F; --oro: #F5C518; --crema: #FFF8F0; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    position: relative;
+    background: var(--rojo);
+    font-family: "Figtree", system-ui, sans-serif;
+    color: #fff;
+  }
+
+  /* Fondo: el mismo lenguaje que el hero — trama waffle, resplandor y viñeta. */
+  .trama {
+    position: absolute; inset: 0; opacity: .55;
+    background-image:
+      linear-gradient(135deg, rgba(255,255,255,.05) 25%, transparent 25%),
+      linear-gradient(225deg, rgba(255,255,255,.05) 25%, transparent 25%);
+    background-size: 30px 30px;
+  }
+  .resplandor {
+    position: absolute; inset: 0;
+    background: radial-gradient(60% 75% at 74% 52%, rgba(255,255,255,.20), transparent 62%);
+  }
+  .vineta {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 45% 45%, transparent 42%, rgba(0,0,0,.42) 100%);
+  }
+
+  /* Producto */
+  .queso {
+    position: absolute; right: -70px; top: -96px; width: 300px;
+    transform: rotate(-8deg);
+    filter: drop-shadow(0 18px 22px rgba(0,0,0,.30));
+  }
+  /* La misma pieza que protagoniza el hero (taco + remolino de queso).
+     Sangra por la derecha a propósito: separa el producto del titular y le da
+     movimiento, igual que los recortes que entran por los bordes del hero. */
+  .taco {
+    position: absolute; right: -120px; top: 130px; width: 680px;
+    transform: rotate(-5deg);
+    filter: drop-shadow(0 22px 26px rgba(0,0,0,.38));
+  }
+
+  /* Columna de texto */
+  .marca {
+    position: absolute; left: 68px; top: 58px;
+    display: flex; align-items: center; gap: 18px;
+  }
+  .marca img {
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 4px solid var(--negro);
+    box-shadow: 0 6px 0 var(--negro);
+  }
+  .marca span {
+    font-family: "Anton", sans-serif; font-size: 38px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--crema);
+  }
+
+  h1 {
+    position: absolute; left: 64px; top: 186px;
+    font-family: "Anton", sans-serif; font-weight: 400;
+    font-size: 124px; line-height: .9; letter-spacing: .01em;
+    text-transform: uppercase;
+    /* Sombra dura, la firma neo-brutalista de la marca: en miniatura es lo que
+       separa las letras del rojo sin necesitar contorno. */
+    text-shadow: 0 9px 0 var(--negro);
+  }
+
+  .pastilla {
+    position: absolute; left: 68px; top: 486px;
+    display: inline-flex; align-items: center; gap: 14px;
+    background: var(--oro); color: var(--negro);
+    border: 4px solid var(--negro); border-radius: 999px;
+    box-shadow: 0 7px 0 var(--negro);
+    padding: 14px 30px 13px;
+    font-weight: 900; font-size: 27px; letter-spacing: .05em; text-transform: uppercase;
+  }
+  .pastilla i { width: 9px; height: 9px; border-radius: 50%; background: var(--negro); }
+
+  /* Pegatina sobre el producto, como en el hero */
+  .pegatina {
+    position: absolute; left: 640px; top: 486px;
+    transform: rotate(-9deg);
+    background: #fff; color: var(--rojo);
+    border: 4px solid var(--negro); border-radius: 999px;
+    box-shadow: 0 7px 0 var(--negro);
+    padding: 12px 26px 10px;
+    font-family: "Anton", sans-serif; font-size: 36px; letter-spacing: .03em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="trama"></div>
+  <div class="resplandor"></div>
+
+  <img class="queso" src="../../public/ingredientes/queso.webp" alt="" />
+  <img class="taco" src="../../public/images/hero-taco.webp" alt="" />
+
+  <div class="vineta"></div>
+
+  <div class="marca">
+    <img src="../../public/images/logo.jpg" alt="" />
+    <span>Tacos Galos</span>
+  </div>
+
+  <h1>Tu taco.<br />Tus reglas.</h1>
+
+  <div class="pastilla"><span>Pide directo</span><i></i><span>100% Halal</span></div>
+
+  <div class="pegatina">-10% 1er pedido</div>
+</body>
+</html>

@@ -79,12 +79,56 @@ type Pieza = {
   fuga: { x: number; y: number };
   /** false = se sustituye por un pixel transparente en móvil y no se descarga. */
   enMovil: boolean;
+  /** Ruta propia. Sin ella se usa /ingredientes/{id}.webp. */
+  src?: string;
   /** Desde qué ancho se descarga. Tiene que coincidir con el breakpoint de
       `pos`, o el navegador se baja un recorte que nunca va a enseñar. */
   desde?: string;
 };
 
+/*
+  Caja del taco protagonista, compartida con su escenario (rayos, halo y
+  sombra) para que los dos no puedan descuadrarse.
+
+  La escena trae el taco al 78% de su ancho: el resto es el remolino de queso
+  y las partículas. Por eso la caja es más ancha que la del recorte suelto
+  (41% frente a 32%) y sube un poco: el TACO conserva su tamaño y su centro, y
+  lo nuevo crece a su alrededor. En lg la caja se queda en 40% y pegada al
+  borde derecho porque a 1024 el remolino izquierdo llegaba al párrafo.
+*/
+const CAJA_TACO =
+  "right-0 top-[calc(31%_-_1vw)] w-[40%] xl:right-[3.5%] xl:top-[calc(31%_-_2.3vw)] xl:w-[41%]";
+
 const PIEZAS: Pieza[] = [
+  /*
+    EL TACO PROTAGONISTA.
+
+    La mitad derecha del hero era rojo vacío en escritorio: el titular dice
+    «TU TACO» y a su lado no había ningún taco. Es El Seductor —misma pose y
+    mismo relleno que su foto de la carta— en versión de campaña: el taco de
+    ChatGPT llevado a escena con Higgsfield (Marketing Studio, el propio taco
+    como referencia) con queso fundido que lo rodea y gotea, y especias en el
+    aire. El relleno queda a la vista; el queso es el oro de la marca.
+
+    Queso y pollo quedan orbitándolo en las esquinas, así que la composición
+    se lee como «el taco y lo que lleva dentro». Solo en lg+: por debajo no hay
+    sitio sin pisar el texto, y el `<source>` con media hace que el móvil ni
+    lo descargue.
+  */
+  {
+    id: "taco-protagonista",
+    src: "/images/hero-taco.webp",
+    pos: "hidden lg:block " + CAJA_TACO,
+    dur: 9.4,
+    amp: 7,
+    giro: -5,
+    vaiven: 1.1,
+    retraso: 0.5,
+    prof: 0.92,
+    fuga: { x: 46, y: -36 },
+    enMovil: false,
+    desde: "(min-width: 1024px)",
+  },
   {
     id: "queso",
     /* En movil solo asoman queso y patatas, y asoman DE VERDAD: antes
@@ -180,7 +224,7 @@ function Recorte({
   const x = useTransform([ratonX, fugaX], ([a, b]: number[]) => a + b);
   const y = useTransform([ratonY, fugaY], ([a, b]: number[]) => a + b);
 
-  const src = "/ingredientes/" + pieza.id + ".webp?v=1";
+  const src = pieza.src ?? "/ingredientes/" + pieza.id + ".webp?v=1";
 
   return (
     <div aria-hidden className={cn("pointer-events-none absolute z-[2]", pieza.pos)}>
@@ -242,6 +286,56 @@ function Recorte({
           </motion.div>
         </motion.div>
       </motion.div>
+    </div>
+  );
+}
+
+/*
+  Escenario del taco protagonista: lo que hace que deje de ser un recorte
+  flotando y pase a ser la pieza de campaña. Tres capas, todas CSS:
+
+  - Rayos: el mismo lenguaje que las creatividades «estallido» de los bowls,
+    en blanco al 11% y desvanecidos en círculo. Giran una vuelta cada dos
+    minutos; con movimiento reducido se quedan quietos.
+  - Halo cálido en `screen`: aclara el rojo hacia el oro detrás del producto,
+    que es lo que lo despega del fondo.
+  - Sombra de contacto: el taco flota sobre ella, así que el vaivén se lee
+    como altura y no como un adhesivo que tiembla.
+
+  Va en la caja del taco (CAJA_TACO) y por debajo de los recortes (z-1).
+*/
+function EscenarioTaco({ quieto }: { quieto: boolean }) {
+  const disco = "radial-gradient(closest-side, #000 30%, transparent 74%)";
+  return (
+    <div aria-hidden className={cn("pointer-events-none absolute z-[1] hidden lg:block", CAJA_TACO)}>
+      <div className="relative w-full aspect-[1100/699]">
+        {/* El centrado va en un nodo y el giro en otro: Motion escribe su
+            propio `transform` y pisaría el -translate de Tailwind. */}
+        <div className="absolute left-1/2 top-1/2 w-[156%] aspect-square -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="h-full w-full rounded-full"
+            style={{
+              background:
+                "repeating-conic-gradient(from 8deg, rgba(255,255,255,.11) 0 7deg, transparent 7deg 20deg)",
+              WebkitMaskImage: disco,
+              maskImage: disco,
+            }}
+            animate={quieto ? undefined : { rotate: 360 }}
+            transition={{ duration: 120, ease: "linear", repeat: Infinity }}
+          />
+        </div>
+        <div
+          className="absolute left-1/2 top-1/2 w-[111%] aspect-square -translate-x-1/2 -translate-y-1/2 rounded-full mix-blend-screen"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(255,206,64,.55), rgba(255,160,0,.18) 52%, transparent 76%)",
+          }}
+        />
+        <div
+          className="absolute left-[10%] top-[91%] h-[13%] w-[80%] rounded-full blur-[6px]"
+          style={{ background: "radial-gradient(closest-side, rgba(0,0,0,.5), transparent)" }}
+        />
+      </div>
     </div>
   );
 }
@@ -394,6 +488,8 @@ export function Hero() {
 
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,transparent_38%,rgba(0,0,0,.42)_100%)]" />
       </div>
+
+      <EscenarioTaco quieto={quieto} />
 
       {/* ── RECORTES DE COMIDA ──────────────────────────────────────────── */}
       {PIEZAS.map((p) => (
@@ -589,8 +685,16 @@ export function Hero() {
         </span>
       </PegatinaFlotante>
 
+      {/* Pegada al borde inferior del taco, como una etiqueta de precio sobre
+          el producto: suelta en mitad del rojo no se relacionaba con nada.
+          El taco arranca en top 31% (alto del hero) pero su ALTO depende del
+          ANCHO (w-35% / xl:w-32%, proporción 0,67), así que la pegatina usa la
+          misma fórmula: 31% + una fracción de ese alto expresada en vw, medida
+          para que muerda la esquina inferior izquierda sin tapar el relleno.
+          Con un `top` en % fijo quedaba despegada a 1024 y montada encima a
+          1920. */}
       <PegatinaFlotante
-        className="hidden lg:block right-[17%] xl:right-[21%] bottom-[20%]"
+        className="hidden lg:block left-[59%] top-[calc(31%_+_20.5vw)] xl:left-[59.5%] xl:top-[calc(31%_+_19.2vw)]"
         y={yPegaB}
         raton={raton}
         quieto={quieto}

@@ -9,8 +9,13 @@
  * components/promo/PromoCard.tsx y no se repite diez veces.
  *
  * La clave es el `id` del producto en data/products.ts. Un producto sin
- * entrada aquí sigue mostrando su `imageUrl` de siempre — así conviven las 10
- * reconstruidas con `taco_el_infierno` y `sides_el_wrapito`, que no se tocan.
+ * entrada aquí sigue mostrando su `imageUrl` de siempre (hoy solo
+ * `sides_el_wrapito`).
+ *
+ * El BBQ y El Pakistani no tenían creatividad propia y El Infierno era un
+ * cartel completo (llamas, botella, texto); entran en la pizarra para que las
+ * nueve recetas del jefe se lean como una sola serie. De El Infierno se queda
+ * solo el taco: la botella es otro producto y su etiqueta saldría deformada.
  */
 
 export type VariantePromo = "pizarra" | "estallido";
@@ -32,8 +37,18 @@ export type PromoProducto = {
   rayoB?: string;
 };
 
+/*
+  Los trece recortes son los mismos productos re-fotografiados con
+  Higgsfield (Marketing Studio Image) usando su foto original de la carta
+  (public/images/products) como referencia: mismo plato, más resolución.
+  Se generan con `npm run higgsfield:image -- "..." --ref <original>`.
+*/
 export const PROMOS_PRODUCTO: Record<string, PromoProducto> = {
   // ── Pizarra · fondo de ladrillo oscuro, titular rojo ──────────────
+  p_bbq: {
+    variante: "pizarra",
+    asset: "/promo/taco-bbq.webp",
+  },
   p_crispy: {
     variante: "pizarra",
     asset: "/promo/taco-crispy.webp",
@@ -42,9 +57,17 @@ export const PROMOS_PRODUCTO: Record<string, PromoProducto> = {
     variante: "pizarra",
     asset: "/promo/taco-delicioso.webp",
   },
+  p_infierno: {
+    variante: "pizarra",
+    asset: "/promo/taco-infierno.webp",
+  },
   p_oriental: {
     variante: "pizarra",
     asset: "/promo/taco-oriental.webp",
+  },
+  p_pakistani: {
+    variante: "pizarra",
+    asset: "/promo/taco-pakistani.webp",
   },
   p_seductor: {
     variante: "pizarra",

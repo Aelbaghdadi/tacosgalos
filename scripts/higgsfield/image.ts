@@ -7,6 +7,11 @@
  *    npm run higgsfield:image -- "un taco francés sobre fondo rojo"
  *    npm run higgsfield:image -- "..." --modelo higgsfield-ai/soul/v2/standard
  *    npm run higgsfield:image -- "..." --opt aspect_ratio=9:16 --opt seed=1234
+ *    npm run higgsfield:image -- "..." --modelo marketing-studio/image  *        --ref public/promo/taco-seductor.webp --opt resolution=2k
+ *
+ *  `--ref` sube una imagen local como referencia y la manda en `image_urls`.
+ *  Es lo que convierte la generación en EDICIÓN: el modelo parte de esa foto
+ *  en vez de inventar el producto. Se puede repetir hasta 16 veces.
  *
  *  Hace cuatro cosas, en este orden: envía el prompt, espera a que el trabajo
  *  termine, descarga el resultado y lo guarda en public/generated/.
@@ -32,8 +37,8 @@
  * ============================================================
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { extname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 
 const BASE = "https://api.higgsfield.ai";
@@ -175,6 +180,79 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** Espera con retroceso exponencial y algo de ruido, como pide la doc. */
 function conRuido(ms: number): number {
   return Math.round(ms * (0.75 + Math.random() * 0.5));
+}
+
+/* ── Paso 0 · subir referencias ─────────────────────────────────────── */
+
+const TIPOS: Record<string, string> = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+};
+
+/**
+ * Sube una imagen local y devuelve la URL pública que entiende la API.
+ *
+ * Son dos pasos: pedir a Higgsfield una URL prefirmada y subir el archivo
+ * DIRECTAMENTE al almacenamiento con un PUT.
+ *
+ * ⚠️ Ese PUT va SIN la cabecera Authorization, a propósito. La URL prefirmada
+ * apunta a un almacenamiento de terceros que ya lleva su permiso en la propia
+ * firma; mandarle además nuestras claves sería entregárselas a quien no las
+ * necesita. La documentación lo pide expresamente.
+ */
+async function subirReferencia(ruta: string): Promise<string> {
+  const tipo = TIPOS[extname(ruta).toLowerCase()];
+  if (!tipo) {
+    throw new ErrorHiggsfield(
+      `Formato no admitido para --ref: ${ruta}. Usa jpg, png, webp o gif.`,
+      0,
+      false
+    );
+  }
+
+  let datos: Buffer;
+  try {
+    datos = await readFile(ruta);
+  } catch {
+    throw new ErrorHiggsfield(`No se encuentra la imagen de referencia: ${ruta}`, 0, false);
+  }
+
+  const res = await fetch(`${BASE}/files/generate-upload-url`, {
+    method: "POST",
+    headers: cabeceras({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ content_type: tipo }),
+    signal: AbortSignal.timeout(TIMEOUT_HTTP_MS),
+  });
+  if (!res.ok) throw explicar(res.status, await detalleDeError(res));
+
+  const destino = (await res.json()) as {
+    public_url?: string;
+    upload_url?: string;
+    upload_headers?: Record<string, string>;
+  };
+  if (!destino.upload_url || !destino.public_url) {
+    throw new ErrorHiggsfield("La API no devolvió una URL de subida válida.", 0, false);
+  }
+
+  /* Solo las cabeceras que manda la API; ni una más. */
+  const subida = await fetch(destino.upload_url, {
+    method: "PUT",
+    headers: destino.upload_headers ?? { "Content-Type": tipo },
+    /* Uint8Array y no Buffer: es lo que acepta `fetch` según los tipos. */
+    body: new Uint8Array(datos),
+    signal: AbortSignal.timeout(TIMEOUT_HTTP_MS * 2),
+  });
+  if (!subida.ok) {
+    throw new ErrorHiggsfield(
+      `No se pudo subir la referencia (HTTP ${subida.status}).`,
+      subida.status,
+      subida.status >= 500
+    );
+  }
+  return destino.public_url;
 }
 
 /* ── Paso 1 · enviar el prompt ─────────────────────────────────────── */
@@ -366,16 +444,21 @@ type Opciones = {
   prompt: string;
   modelo: string;
   extra: Record<string, unknown>;
+  refs: string[];
 };
 
 function leerArgumentos(argv: string[]): Opciones {
   const sueltos: string[] = [];
   let modelo = MODELO_POR_DEFECTO;
   const extra: Record<string, unknown> = {};
+  const refs: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--modelo" || a === "--model") {
+    if (a === "--ref") {
+      const r = argv[++i];
+      if (r) refs.push(r);
+    } else if (a === "--modelo" || a === "--model") {
       modelo = argv[++i] ?? modelo;
     } else if (a === "--opt") {
       /*
@@ -398,7 +481,7 @@ function leerArgumentos(argv: string[]): Opciones {
     }
   }
 
-  return { prompt: sueltos.join(" ").trim(), modelo, extra };
+  return { prompt: sueltos.join(" ").trim(), modelo, extra, refs };
 }
 
 /* ── Programa ──────────────────────────────────────────────────────── */
@@ -414,7 +497,7 @@ async function principal(): Promise<void> {
     return;
   }
 
-  const { prompt, modelo, extra } = leerArgumentos(process.argv.slice(2));
+  const { prompt, modelo, extra, refs } = leerArgumentos(process.argv.slice(2));
   if (!prompt) {
     logError(
       '✖ Falta el prompt.\n   Uso: npm run higgsfield:image -- "tu prompt aquí"'
@@ -428,6 +511,15 @@ async function principal(): Promise<void> {
   if (Object.keys(extra).length) log(`▸ Opciones: ${JSON.stringify(extra)}`);
 
   try {
+    if (refs.length) {
+      const urls: string[] = [];
+      for (const r of refs) {
+        log(`▸ Subiendo referencia: ${r}`);
+        urls.push(await subirReferencia(r));
+      }
+      extra.image_urls = urls;
+    }
+
     const requestId = await enviar(modelo, { prompt, ...extra });
     log(`▸ Trabajo: ${requestId}`);
 

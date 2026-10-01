@@ -35,7 +35,20 @@ if (
 export const SITE_URL = (RAW_SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 const SITE_NAME = "Tacos Galos";
-const DEFAULT_OG = "/images/mascot-delivery.jpeg";
+/**
+ * Portada al compartir. 1200x630, la medida que piden Open Graph y X.
+ *
+ * Antes apuntaba a /images/mascot-delivery.jpeg, que es una STORY vertical de
+ * 945x2048: las redes recortan el centro de una imagen 9:16 y lo que salía al
+ * compartir era la mascota con los logos de Glovo y Uber Eats — justo lo que
+ * la web quiere que se deje de usar. Y aquí abajo se declaraba 1200x630, así
+ * que las plataformas que se fían del tamaño declarado la pintaban mal además.
+ *
+ * La fuente editable está en scripts/og/portada.html.
+ */
+const DEFAULT_OG = "/og/tacos-galos.jpg";
+const DEFAULT_OG_ALT =
+  "Tacos Galos — Tu taco. Tus reglas. Pide directo en la web, 100% Halal.";
 
 /**
  * Genera Metadata estándar para una página, con Open Graph + Twitter cards.
@@ -57,7 +70,17 @@ export function buildMetadata(opts: {
       description: opts.description,
       url,
       siteName: SITE_NAME,
-      images: [{ url: image, width: 1200, height: 630, alt: opts.title }],
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          /* El alt describe la IMAGEN; repetir el título no le dice nada a
+             quien no la ve. */
+          alt: opts.image ? opts.title : DEFAULT_OG_ALT,
+          type: "image/jpeg",
+        },
+      ],
       type: "website",
       locale: "es_ES",
     },
