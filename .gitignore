@@ -21,3 +21,9 @@ masters/*
 # Salidas accidentales en la raíz (generaciones sueltas, grabaciones)
 /Gemini_Generated_Image_*
 /crav-recorrido-completo.gif
+
+# Salida de scripts/higgsfield/: imágenes regenerables y pesadas (1-2 MB cada
+# una). Mismo criterio que assets-raw/ y masters/. Cuando una valga para la
+# web, se mueve a public/images/ y esa sí se commitea.
+public/generated/*
+!public/generated/.gitkeep
